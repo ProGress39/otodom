@@ -2,7 +2,16 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 import unicodedata
+import csv
 
+# Connecting to csv file with list of polish towns (later we use it to define which string in class is city as there's common class for few elements in one span)
+with open('places.csv', encoding='utf-8') as c:
+    city = csv.reader(c)
+    cities_lists = list(city)
+    cities = []
+    for city_string in cities_lists:
+        for city_string2 in city_string:
+            cities.append(city_string2)
 
 # Connect to site
 text_html = requests.get('https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie').text
@@ -16,20 +25,21 @@ post_titles = []
 post_prices = []
 
 for post in post_container:
+
+    # Find & append titles
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
-    post_price = post.find('span', class_ = 'css-rmqm02 eclomwz0').text
-
-    post_price_ns = unicodedata.normalize('NFKD', post_price).replace(' ', '').replace('zł', '')
-
     post_titles.append(post_title)
 
-    # Inserting None instead of "ask for price" if there's no price mentioned
+    # Find & append prices. Inserting None instead of "ask for price" if there's no price mentioned
+    post_price = post.find('span', class_ = 'css-rmqm02 eclomwz0').text
+    post_price_ns = unicodedata.normalize('NFKD', post_price).replace(' ', '').replace('zł', '')
     if post_price_ns == 'Zapytajocenę':
         post_prices.append(None)
     else:
         post_prices.append(post_price_ns)
 
-print(post_prices)
+    # find & append cities in common class span
+    
 
     
 
