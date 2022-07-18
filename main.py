@@ -1,7 +1,11 @@
+from bs4 import BeautifulSoup
 import requests
 
-text_html = requests.get('https://www.olx.pl/d/motoryzacja/samochody/?search%5Bfilter_float_price:from%5D=10000&search%5Bfilter_float_price:to%5D=50000&search%5Bfilter_float_year:from%5D=2010')
+text_html = requests.get('https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie').text
+soup = BeautifulSoup(text_html, 'html.parser')
 
-print(text_html)
-
-print("alle")
+post_container = soup.find('article', class_ = 'css-1th7s4x es62z2j16')
+post_title = post_container.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
+post_price = post_container.find('span', class_ = 'css-rmqm02 eclomwz0').text
+print(post_title)
+print(post_price)
