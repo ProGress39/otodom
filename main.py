@@ -50,6 +50,9 @@ for post in post_container:
         if town in cities_list:
             post_cities.append(town)
 
+print(len(post_titles))         
+print(len(post_prices))
+print(len(post_cities))
 
 
     
