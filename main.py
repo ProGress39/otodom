@@ -1,31 +1,32 @@
+from random import betavariate
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 import unicodedata
 import csv
 
-# Connecting to csv file with list of polish towns (later we use it to define which string in class is city as there's common class for few elements in one span)
-with open('places.csv', encoding='utf-8') as c:
-    city = csv.reader(c)
-    cities_lists = list(city)
-    cities = []
-    for city_string in cities_lists:
-        for city_string2 in city_string:
-            cities.append(city_string2)
+# Connecting to otodom list cities to create list of available cities. Based on that we can later exctract city from common class which include other strings.
+with open('cities.csv') as cities_file:
+    reader = csv.reader(cities_file)
+    cities = list(reader)
+    cities_list = []
+    for city_listed in cities:
+        for city in city_listed:
+            if city != '':
+                cities_list.append(city)
+    
 
-# Connect to site
-text_html = requests.get('https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie').text
 
-# Create soup
-soup = BeautifulSoup(text_html, 'html.parser')
+# Connect to site, create soup
+main_site_html = requests.get('https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie').text
+main_soup = BeautifulSoup(main_site_html, 'html.parser')
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table
-post_container = soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
-post_titles = []
-post_prices = []
+post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
+post_titles, post_prices, post_cities  = ([] for i in range(3))
 
+# Loop to dive into post container and extract informations
 for post in post_container:
-
     # Find & append titles
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
     post_titles.append(post_title)
@@ -44,7 +45,12 @@ for post in post_container:
         post_prices.append(round(int(float(post_price_ns)), 0))
 
     # find & append cities in common class span
-print(post_prices)
+    post_area = post.find('span', class_ = 'css-17o293g es62z2j9').text.split(',')
+    for town in post_area:
+        if town in cities_list:
+            post_cities.append(town)
+
+
 
     
 
