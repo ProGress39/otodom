@@ -30,16 +30,21 @@ for post in post_container:
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
     post_titles.append(post_title)
 
-    # Find & append prices. Inserting None instead of "ask for price" if there's no price mentioned
+    # Find & append prices. Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.
     post_price = post.find('span', class_ = 'css-rmqm02 eclomwz0').text
-    post_price_ns = unicodedata.normalize('NFKD', post_price).replace(' ', '').replace('zł', '')
+    post_price_ns = unicodedata.normalize('NFKD', post_price)
+
+    post_price_replace = {' ':'', 'zł': '', ',':'.'}
+    for key, value in post_price_replace.items():
+        post_price_ns = post_price_ns.replace(key, value)
+
     if post_price_ns == 'Zapytajocenę':
         post_prices.append(None)
     else:
-        post_prices.append(post_price_ns)
+        post_prices.append(round(int(float(post_price_ns)), 0))
 
     # find & append cities in common class span
-    
+print(post_prices)
 
     
 
