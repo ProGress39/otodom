@@ -49,10 +49,13 @@ for post in post_container:
     for town in post_area:
         if town in cities_list:
             post_cities.append(town)
+        else:
+            post_cities.append(None)
+       
+print(post_prices)
+print(post_cities)
 
-print(len(post_titles))         
-print(len(post_prices))
-print(len(post_cities))
+#rozkminić tak żeby dopasowywać miasta do cen na równi żeby potem można to było wrzucić w tabelę. Zastąpić None ale tylko miasta..
 
 
     
