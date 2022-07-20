@@ -53,9 +53,16 @@ for post in post_container:
         else:
             continue
 
+    # 4. Find & append square metrage in common class span.
+    post_sq_rooms = post.find_all('span', class_='css-rmqm02 eclomwz0')
+    post_rooms.append(int(post_sq_rooms[2].text[0]))
+    post_sqmetrage.append(float(post_sq_rooms[3].text.split(' ')[0]))
+
 
 print(len(post_titles))
 print(len(post_cities))
 print(len(post_prices))
+print(len(post_rooms))
+print(len(post_sqmetrage))
 
  
