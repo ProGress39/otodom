@@ -1,4 +1,3 @@
-from random import betavariate
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
@@ -14,14 +13,6 @@ with open('cities.csv', encoding="utf8") as cities_file:
         for city in city_listed:
             if city != '':
                 cities_list.append(city)
-
-with open('voivodeships.csv', encoding='utf-8') as voivode_file:
-    reader = csv.reader(voivode_file)
-    voivodeships = list(reader)
-    voivode_list = []
-    for voivode_listed in voivodeships:
-        for voivode in voivode_listed:
-            voivode_list.append(voivode)
     
 
 
@@ -31,15 +22,16 @@ main_soup = BeautifulSoup(main_site_html, 'html.parser')
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table
 post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
-post_titles, post_prices, post_cities, post_voivodeships  = ([] for i in range(4))
+post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type  = ([] for i in range(6))
 
 # Loop to dive into post container and extract informations
 for post in post_container:
-    # Find & append titles
+    # 1. Find & append titles
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
     post_titles.append(post_title)
 
-    # Find & append prices. Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.
+    # 2. Find & append prices, number of rooms, square metrage (they're in same span class).
+    # Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned. 
     post_price = post.find('span', class_ = 'css-rmqm02 eclomwz0').text
     post_price_ns = unicodedata.normalize('NFKD', post_price)
 
@@ -52,25 +44,18 @@ for post in post_container:
     else:
         post_prices.append(round(int(float(post_price_ns)), 0))
 
-    # find & append cities in common class span
+    # 3. Find & append cities in common class span. Comparing with goverment list of polish cities.
     post_area = post.find('span', class_ = 'css-17o293g es62z2j9').text.split(',')
     for town in post_area:
         if town.strip() in cities_list:
-            post_cities.append(town)
-            post_voivodeships.append(voivode_list[cities_list.index(town.strip())])
+            post_cities.append(town.strip())
             break
         else:
             continue
 
+
+print(len(post_titles))
 print(len(post_cities))
 print(len(post_prices))
-print(len(post_titles))
-print(len(post_voivodeships))
-
-print(post_cities)
-print(post_voivodeships)
-
-
-#Źle dopisują się województwa do miast, ponieważ jest kilka takich samych miast w Polsce
 
  
