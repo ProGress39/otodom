@@ -6,7 +6,7 @@ import unicodedata
 import csv
 
 # Connecting to otodom list cities to create list of available cities. Based on that we can later exctract city from common class which include other strings.
-with open('cities.csv') as cities_file:
+with open('cities.csv', encoding="utf8") as cities_file:
     reader = csv.reader(cities_file)
     cities = list(reader)
     cities_list = []
@@ -14,6 +14,14 @@ with open('cities.csv') as cities_file:
         for city in city_listed:
             if city != '':
                 cities_list.append(city)
+
+with open('voivodeships.csv', encoding='utf-8') as voivode_file:
+    reader = csv.reader(voivode_file)
+    voivodeships = list(reader)
+    voivode_list = []
+    for voivode_listed in voivodeships:
+        for voivode in voivode_listed:
+            voivode_list.append(voivode)
     
 
 
@@ -23,7 +31,7 @@ main_soup = BeautifulSoup(main_site_html, 'html.parser')
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table
 post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
-post_titles, post_prices, post_cities  = ([] for i in range(3))
+post_titles, post_prices, post_cities, post_voivodeships  = ([] for i in range(4))
 
 # Loop to dive into post container and extract informations
 for post in post_container:
@@ -49,15 +57,20 @@ for post in post_container:
     for town in post_area:
         if town.strip() in cities_list:
             post_cities.append(town)
+            post_voivodeships.append(voivode_list[cities_list.index(town.strip())])
             break
         else:
             continue
-    print(post_area)
-print(post_cities)
+
 print(len(post_cities))
+print(len(post_prices))
+print(len(post_titles))
+print(len(post_voivodeships))
 
-#rozkminić tak żeby dopasowywać miasta do cen na równi żeby potem można to było wrzucić w tabelę. Zastąpić None ale tylko miasta..
+print(post_cities)
+print(post_voivodeships)
 
-    
 
-    
+#Źle dopisują się województwa do miast, ponieważ jest kilka takich samych miast w Polsce
+
+ 
