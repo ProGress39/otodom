@@ -47,16 +47,16 @@ for post in post_container:
     # find & append cities in common class span
     post_area = post.find('span', class_ = 'css-17o293g es62z2j9').text.split(',')
     for town in post_area:
-        if town in cities_list:
+        if town.strip() in cities_list:
             post_cities.append(town)
+            break
         else:
-            post_cities.append(None)
-       
-print(post_prices)
+            continue
+    print(post_area)
 print(post_cities)
+print(len(post_cities))
 
 #rozkminić tak żeby dopasowywać miasta do cen na równi żeby potem można to było wrzucić w tabelę. Zastąpić None ale tylko miasta..
-
 
     
 
