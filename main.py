@@ -4,6 +4,7 @@ import pandas as pd
 import unicodedata
 import csv
 import lxml.html
+from multiprocessing import Pool
 
 
 # Connecting to otodom list cities to create list of available cities. Based on that we can later exctract city from common class which include other strings.
@@ -75,10 +76,8 @@ def append_type():
         post_type.append('Oferta firmowa')
 
 
-
-main_soup = BeautifulSoup(all_pages_html, 'lxml')
-
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table
+main_soup = BeautifulSoup(all_pages_html, 'lxml')
 post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
 # Loop to dive into post container and extract informations
