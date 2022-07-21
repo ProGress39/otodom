@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 import unicodedata
 import csv
+import lxml.html
 
 # Connecting to otodom list cities to create list of available cities. Based on that we can later exctract city from common class which include other strings.
 with open('cities.csv', encoding="utf8") as cities_file:
@@ -17,12 +18,19 @@ with open('cities.csv', encoding="utf8") as cities_file:
 
 
 # Connect to site, create soup
-main_site_html = requests.get('https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie').text
-main_soup = BeautifulSoup(main_site_html, 'html.parser')
+
+post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type  = ([] for i in range(6))
+all_pages_html = ''
+
+for page in range(0,5):
+    URL_Site = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}'.format(page)
+    req = requests.get(URL_Site).text
+    all_pages_html = all_pages_html + req[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
+
+main_soup = BeautifulSoup(all_pages_html, 'lxml')
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table
 post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
-post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type  = ([] for i in range(6))
 
 # Loop to dive into post container and extract informations
 for post in post_container:
@@ -73,4 +81,3 @@ print(len(post_sqmetrage))
 print(len(post_type))
 
 # Podłączyć wszystkie strony
- 
