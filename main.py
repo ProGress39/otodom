@@ -43,7 +43,7 @@ for post in post_container:
     post_price = post.find('span', class_ = 'css-rmqm02 eclomwz0').text
     post_price_ns = unicodedata.normalize('NFKD', post_price)
 
-    post_price_replace = {' ':'', 'zł': '', ',':'.'}
+    post_price_replace = {' ':'', 'zł': '','€':'', ',':'.'}
     for key, value in post_price_replace.items():
         post_price_ns = post_price_ns.replace(key, value)
 
