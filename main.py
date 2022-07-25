@@ -5,6 +5,13 @@ import unicodedata
 import csv
 import lxml.html
 from multiprocessing import Pool
+import pyspark
+from pyspark.sql import SparkSession
+import os
+import sys
+
+os.environ['PYSPARK_PYTHON'] = sys.executable
+os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 
 
 # Connecting to otodom list cities to create list of available cities. Based on that we can later exctract city from common class which include other strings.
@@ -20,7 +27,7 @@ with open('cities.csv', encoding="utf8") as cities_file:
 
 # Connect to page
 all_pages_html = ''
-for page in range(0,10):
+for page in range(0,2):
     URL_Site = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}'.format(page)
     req = requests.get(URL_Site).text
     all_pages_html = all_pages_html + req[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
@@ -71,9 +78,9 @@ def append_sqm():
 def append_type():
     post_sq_type = post.find('span', class_='css-13vzu28 e1dxhs6v2')
     if post_sq_type != None:
-        post_type.append(post_sq_type.text)
+        post_type.append('Private post')
     else:
-        post_type.append('Oferta firmowa')
+        post_type.append('Company post')
 
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table
@@ -88,13 +95,16 @@ for post in post_container:
     append_sqm()
     append_type()
 
+# Create dictionary from lists
+posts_dict = [{'Title': post_titles, 'Price': post_prices, 'City': post_cities,
+               'Sq Metrage': post_sqmetrage, 'Rooms': post_rooms, 'Post type': post_type}
+                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
+                in zip(post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type)]
 
-print(len(post_titles))
-print(len(post_cities))
-print(len(post_prices))
-print(len(post_rooms))
-print(len(post_sqmetrage))
-print(len(post_type))
+spark = SparkSession.builder.getOrCreate()
+
+posts_df = spark.createDataFrame(posts_dict)
+type(posts_df)
 
 
 
