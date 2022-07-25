@@ -3,13 +3,11 @@ import requests
 import unicodedata
 import csv
 import lxml.html
-from multiprocessing import Pool
 import pyspark
 from pyspark.sql import SparkSession
 import os
 import sys
-
-sys.setrecursionlimit(50000)
+from joblib import Parallel, delayed
 
 # Solving problem with PySpark environmental variables
 os.environ['PYSPARK_PYTHON'] = sys.executable
@@ -40,13 +38,13 @@ post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type  = 
 
 
 #Functions
-def append_data(post):
+def append_data():
 # 1. Find & append titles
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
     post_titles.append(post_title)
 
 # 2. Find & append prices, number of rooms, square metrage (they're in same span class).
-    # Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.  
+    # Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.     
     post_price = post.find('span', class_ = 'css-rmqm02 eclomwz0').text
     post_price_ns = unicodedata.normalize('NFKD', post_price)
 
@@ -85,10 +83,20 @@ def append_data(post):
 main_soup = BeautifulSoup(all_pages_html, 'lxml')
 post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
-if __name__ == '__main__':
-    pool = Pool()
-    pool.map(append_data, post_container)
-    pool.terminate()
-    pool.join()
+# Loop to dive into post container and extract informations
+Parallel (n_jobs=2)(delayed(for post in post_container):
+    append_data()
 
-print(len(post_cities))
+# Create dictionary from lists
+posts_dict = [{'Title': post_titles, 'Price': post_prices, 'City': post_cities,
+               'Sq Metrage': post_sqmetrage, 'Rooms': post_rooms, 'Post type': post_type}
+                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
+                in zip(post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type)]
+
+
+spark = SparkSession.builder.getOrCreate()
+
+posts_df = spark.createDataFrame(posts_dict)
+posts_df.show()
+
+#Zainstalowałem hadoop, teraz dodać zmienne środowiskowe
