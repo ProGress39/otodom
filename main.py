@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 import requests
-import pandas as pd
 import unicodedata
 import csv
 import lxml.html
@@ -10,6 +9,7 @@ from pyspark.sql import SparkSession
 import os
 import sys
 
+# Solving problem with PySpark environmental variables
 os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 
@@ -101,11 +101,10 @@ posts_dict = [{'Title': post_titles, 'Price': post_prices, 'City': post_cities,
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
                 in zip(post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type)]
 
+
 spark = SparkSession.builder.getOrCreate()
 
 posts_df = spark.createDataFrame(posts_dict)
-type(posts_df)
+posts_df.show()
 
-
-
-#przyspieszyć działanie
+#Zainstalowałem hadoop, teraz dodać zmienne środowiskowe
