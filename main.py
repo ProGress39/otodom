@@ -9,6 +9,8 @@ from pyspark.sql import SparkSession
 import os
 import sys
 
+sys.setrecursionlimit(50000)
+
 # Solving problem with PySpark environmental variables
 os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
@@ -38,7 +40,7 @@ post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type  = 
 
 
 #Functions
-def append_data():
+def append_data(post):
 # 1. Find & append titles
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
     post_titles.append(post_title)
@@ -83,8 +85,10 @@ def append_data():
 main_soup = BeautifulSoup(all_pages_html, 'lxml')
 post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
-# Loop to dive into post container and extract informations
-for post in post_container:
-    append_data()
+if __name__ == '__main__':
+    pool = Pool()
+    pool.map(append_data, post_container)
+    pool.terminate()
+    pool.join()
 
 print(len(post_cities))
