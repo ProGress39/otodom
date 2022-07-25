@@ -9,6 +9,8 @@ from pyspark.sql import SparkSession
 import os
 import sys
 
+sys.setrecursionlimit(50000)
+
 # Solving problem with PySpark environmental variables
 os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
@@ -87,24 +89,16 @@ def append_type():
 main_soup = BeautifulSoup(all_pages_html, 'lxml')
 post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
-# Loop to dive into post container and extract informations
-for post in post_container:
+def append_data():
     append_titles()
     append_prices()
     append_cities()
     append_sqm()
     append_type()
 
-# Create dictionary from lists
-posts_dict = [{'Title': post_titles, 'Price': post_prices, 'City': post_cities,
-               'Sq Metrage': post_sqmetrage, 'Rooms': post_rooms, 'Post type': post_type}
-                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
-                in zip(post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type)]
+if __name__ == '__main__':
+    pool = Pool()
+    pool.map(append_data, post_container)
+    pool.terminate()
+    pool.join()
 
-
-spark = SparkSession.builder.getOrCreate()
-
-posts_df = spark.createDataFrame(posts_dict)
-posts_df.show()
-
-#Zainstalowałem hadoop, teraz dodać zmienne środowiskowe
