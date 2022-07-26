@@ -34,7 +34,7 @@ with open('cities.csv', encoding="utf8") as cities_file:
 # Connect to page
 all_pages_html = ''
 for page in range(0,2):
-    URL_Site = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}'.format(page)
+    URL_Site = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}&limit=1500'.format(page)
     req = requests.get(URL_Site).text
     all_pages_html = all_pages_html + req[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
 
@@ -104,8 +104,7 @@ spark = SparkSession.builder.getOrCreate()
 
 posts_df = spark.createDataFrame(posts_dict)
 
-
-actual = posts_df.withColumn('SqMetrageBucket', \
+modified_posts_df = posts_df.withColumn('SqMetrageBucket', \
     when((posts_df.SqMetrage < 30), lit('<30')) \
         .when((posts_df.SqMetrage >= 30) & (posts_df.SqMetrage <50), lit('30-49')) \
         .when((posts_df.SqMetrage >= 50) & (posts_df.SqMetrage <75), lit('30-74')) \
@@ -116,4 +115,5 @@ actual = posts_df.withColumn('SqMetrageBucket', \
     .otherwise(lit('Normal')) \
     ).withColumn('PricePerSqM', (posts_df.Price) / (posts_df.SqMetrage))
 
-actual.show()
+pandas_df = modified_posts_df.toPandas()
+pandas_df.to_csv(r'C:\Users\mapop\OneDrive\Pulpit\Web Scrapping\Otomoto\posts.csv', index=False, header=True)
