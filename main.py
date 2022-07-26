@@ -31,7 +31,7 @@ with open('cities.csv', encoding="utf8") as cities_file:
                 cities_list.append(city)
 
 
-# Connect to page
+# Connect to otodom webpage and append htmls to one string
 all_pages_html = ''
 for page in range(0,2):
     URL_Site = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}&limit=1000'.format(page)
@@ -43,8 +43,9 @@ for page in range(0,2):
 post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type  = ([] for i in range(6))
 
 
-#Functions
+#Append data to empty list
 def append_data(post):
+
 # 1. Find & append titles
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
     post_titles.append(post_title)
@@ -99,7 +100,7 @@ posts_dict = [{'Title': post_titles, 'Price': post_prices, 'City': post_cities,
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
                 in zip(post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type)]
 
-
+# Start spark session, create dataframe from lists and add new conditional columns
 spark = SparkSession.builder.getOrCreate()
 
 posts_df = spark.createDataFrame(posts_dict)
@@ -115,5 +116,6 @@ modified_posts_df = posts_df.withColumn('SqMetrageBucket', \
     .otherwise(lit('Normal')) \
     ).withColumn('PricePerSqM', (posts_df.Price) / (posts_df.SqMetrage))
 
+# Convert Spark df to pandas df, then send it to MySQL
 pandas_df = modified_posts_df.toPandas()
 pandas_df.to_csv(r'C:\Users\mapop\OneDrive\Pulpit\Web Scrapping\Otomoto\posts.csv', index=False, header=True)
