@@ -10,6 +10,7 @@ import sys
 from joblib import Parallel, delayed
 import joblib
 import pickle
+from pyspark.sql.functions import when, lit
 
 
 sys.setrecursionlimit(20000)
@@ -32,7 +33,7 @@ with open('cities.csv', encoding="utf8") as cities_file:
 
 # Connect to page
 all_pages_html = ''
-for page in range(0,5):
+for page in range(0,2):
     URL_Site = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}'.format(page)
     req = requests.get(URL_Site).text
     all_pages_html = all_pages_html + req[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
@@ -88,13 +89,13 @@ def append_data(post):
 main_soup = BeautifulSoup(all_pages_html, 'lxml')
 post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
-# Loop to dive into post container and extract informations
+# Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from your device.
 if __name__ == '__main__':
     Parallel(n_jobs=1)(delayed(append_data)(post) for post in post_container)
 
 # Create dictionary from lists
 posts_dict = [{'Title': post_titles, 'Price': post_prices, 'City': post_cities,
-               'Sq Metrage': post_sqmetrage, 'Rooms': post_rooms, 'Post type': post_type}
+               'SqMetrage': post_sqmetrage, 'Rooms': post_rooms, 'PostType': post_type}
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
                 in zip(post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type)]
 
@@ -102,6 +103,17 @@ posts_dict = [{'Title': post_titles, 'Price': post_prices, 'City': post_cities,
 spark = SparkSession.builder.getOrCreate()
 
 posts_df = spark.createDataFrame(posts_dict)
-posts_df.show()
 
-#Parallel umożliwić
+
+actual = posts_df.withColumn('SqMetrageBucket', \
+    when((posts_df.SqMetrage < 30), lit('<30')) \
+        .when((posts_df.SqMetrage >= 30) & (posts_df.SqMetrage <50), lit('30-49')) \
+        .when((posts_df.SqMetrage >= 50) & (posts_df.SqMetrage <75), lit('30-74')) \
+        .when((posts_df.SqMetrage >= 75) & (posts_df.SqMetrage <= 100), lit('75-100')) \
+        .otherwise(lit('>100')) \
+        ).withColumn('Urgency', \
+    when((posts_df.Title.contains('Pilne')) | (posts_df.Title.contains('Pilnie')), lit('Urgent')) \
+    .otherwise(lit('Normal')) \
+    ).withColumn('PricePerSqM', (posts_df.Price) / (posts_df.SqMetrage))
+
+actual.show()
