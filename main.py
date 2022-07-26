@@ -8,6 +8,10 @@ from pyspark.sql import SparkSession
 import os
 import sys
 from joblib import Parallel, delayed
+import joblib
+
+
+sys.setrecursionlimit(50000)
 
 # Solving problem with PySpark environmental variables
 os.environ['PYSPARK_PYTHON'] = sys.executable
@@ -27,7 +31,7 @@ with open('cities.csv', encoding="utf8") as cities_file:
 
 # Connect to page
 all_pages_html = ''
-for page in range(0,2):
+for page in range(0,10):
     URL_Site = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}'.format(page)
     req = requests.get(URL_Site).text
     all_pages_html = all_pages_html + req[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
@@ -38,7 +42,7 @@ post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type  = 
 
 
 #Functions
-def append_data():
+def append_data(post):
 # 1. Find & append titles
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
     post_titles.append(post_title)
@@ -84,8 +88,7 @@ main_soup = BeautifulSoup(all_pages_html, 'lxml')
 post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
 # Loop to dive into post container and extract informations
-Parallel (n_jobs=2)(delayed(for post in post_container):
-    append_data()
+Parallel(n_jobs=2)(delayed(append_data)(post) for post in post_container)
 
 # Create dictionary from lists
 posts_dict = [{'Title': post_titles, 'Price': post_prices, 'City': post_cities,
