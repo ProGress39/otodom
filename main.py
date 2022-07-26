@@ -33,8 +33,8 @@ with open('cities.csv', encoding="utf8") as cities_file:
 
 # Connect to page
 all_pages_html = ''
-for page in range(0,106):
-    URL_Site = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}&limit=1500'.format(page)
+for page in range(0,2):
+    URL_Site = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}&limit=1000'.format(page)
     req = requests.get(URL_Site).text
     all_pages_html = all_pages_html + req[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
 
