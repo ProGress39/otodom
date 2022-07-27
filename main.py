@@ -4,14 +4,13 @@ import unicodedata
 import csv
 import lxml.html
 import pyspark
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrameWriter
 import os
 import sys
 from joblib import Parallel, delayed
 import joblib
 import pickle
 from pyspark.sql.functions import when, lit, current_date
-
 
 sys.setrecursionlimit(20000)
 
@@ -95,8 +94,8 @@ if __name__ == '__main__':
     Parallel(n_jobs=1)(delayed(append_data)(post) for post in post_container)
 
 # Create dictionary from lists
-posts_dict = [{'Title': post_titles, 'Price': post_prices, 'City': post_cities,
-               'SqMetrage': post_sqmetrage, 'Rooms': post_rooms, 'PostType': post_type}
+posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
+               'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
                 in zip(post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type)]
 
@@ -105,17 +104,26 @@ spark = SparkSession.builder.getOrCreate()
 
 posts_df = spark.createDataFrame(posts_dict)
 
-modified_posts_df = posts_df.withColumn('sqmetragebucket', \
-    when((posts_df.SqMetrage < 30), lit('<30')) \
-        .when((posts_df.SqMetrage >= 30) & (posts_df.SqMetrage <50), lit('30-49')) \
-        .when((posts_df.SqMetrage >= 50) & (posts_df.SqMetrage <75), lit('50-74')) \
-        .when((posts_df.SqMetrage >= 75) & (posts_df.SqMetrage <= 100), lit('75-100')) \
+modified_posts_df = posts_df.withColumn('sqm_bucket', \
+    when((posts_df.post_sqmetrage < 30), lit('<30')) \
+        .when((posts_df.post_sqmetrage >= 30) & (posts_df.post_sqmetrage <50), lit('30-49')) \
+        .when((posts_df.post_sqmetrage >= 50) & (posts_df.post_sqmetrage <75), lit('50-74')) \
+        .when((posts_df.post_sqmetrage >= 75) & (posts_df.post_sqmetrage <= 100), lit('75-100')) \
         .otherwise(lit('>100')) \
         ).withColumn('urgency', \
-    when((posts_df.Title.contains('pilne')) | (posts_df.Title.contains('pilnie')), lit('urgent')) \
+    when((posts_df.post_title.contains('pilne')) | (posts_df.post_title.contains('pilnie')), lit('urgent')) \
     .otherwise(lit('normal')) \
-    ).withColumn('pricepersqM', (posts_df.Price) / (posts_df.SqMetrage)
-    ).withColumn('current_date', current_date())
+    ).withColumn('price_per_sqm', (posts_df.post_price) / (posts_df.post_sqmetrage)
+    ).withColumn('date', current_date())
 
 # Save Spark df to MySQL
-modified_posts_df.show()
+modified_posts_df.write \
+                    .format("jdbc") \
+                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("dbtable","otodom") \
+                    .option("user","SylwesterNowak") \
+                    .option("password","AlienAlien1212!") \
+                    .mode('Append') \
+                    .save()
+
+# Zakryć dane logowania & ustawić last page żeby zczytywało z kwadracika
