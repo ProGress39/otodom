@@ -10,7 +10,7 @@ import sys
 from joblib import Parallel, delayed
 import joblib
 import pickle
-from pyspark.sql.functions import when, lit
+from pyspark.sql.functions import when, lit, current_date
 
 
 sys.setrecursionlimit(20000)
@@ -105,17 +105,17 @@ spark = SparkSession.builder.getOrCreate()
 
 posts_df = spark.createDataFrame(posts_dict)
 
-modified_posts_df = posts_df.withColumn('SqMetrageBucket', \
+modified_posts_df = posts_df.withColumn('sqmetragebucket', \
     when((posts_df.SqMetrage < 30), lit('<30')) \
         .when((posts_df.SqMetrage >= 30) & (posts_df.SqMetrage <50), lit('30-49')) \
         .when((posts_df.SqMetrage >= 50) & (posts_df.SqMetrage <75), lit('50-74')) \
         .when((posts_df.SqMetrage >= 75) & (posts_df.SqMetrage <= 100), lit('75-100')) \
         .otherwise(lit('>100')) \
-        ).withColumn('Urgency', \
-    when((posts_df.Title.contains('Pilne')) | (posts_df.Title.contains('Pilnie')), lit('Urgent')) \
-    .otherwise(lit('Normal')) \
-    ).withColumn('PricePerSqM', (posts_df.Price) / (posts_df.SqMetrage))
+        ).withColumn('urgency', \
+    when((posts_df.Title.contains('pilne')) | (posts_df.Title.contains('pilnie')), lit('urgent')) \
+    .otherwise(lit('normal')) \
+    ).withColumn('pricepersqM', (posts_df.Price) / (posts_df.SqMetrage)
+    ).withColumn('current_date', current_date())
 
-# Convert Spark df to pandas df, then send it to MySQL
-pandas_df = modified_posts_df.toPandas()
-pandas_df.to_csv(r'C:\Users\mapop\OneDrive\Pulpit\Web Scrapping\Otomoto\posts.csv', index=False, header=True)
+# Save Spark df to MySQL
+modified_posts_df.show()
