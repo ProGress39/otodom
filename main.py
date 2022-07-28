@@ -126,4 +126,4 @@ modified_posts_df.write \
                     .mode('Append') \
                     .save()
 
-# Zakryć dane logowania & ustawić last page żeby zczytywało z kwadracika
+# Zakryć dane logowania & ustawić last page żeby zczytywało z kwadracika & zamienić multiple withColumn na Select & rozbić funkcje
