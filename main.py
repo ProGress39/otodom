@@ -122,7 +122,8 @@ modified_posts_df = posts_df.select(['*', \
         \
         lit((posts_df.post_price) / (posts_df.post_sqmetrage)).alias('price_per_sqm'), \
         \
-        lit(current_date()).alias('date')])
+        lit(current_date()).alias('date') \
+        ])
 
 # Save Spark df to MySQL
 modified_posts_df.write \
