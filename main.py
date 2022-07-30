@@ -109,17 +109,20 @@ spark = SparkSession.builder.getOrCreate()
 
 posts_df = spark.createDataFrame(posts_dict)
 
-modified_posts_df = posts_df.withColumn('sqm_bucket', \
-    when((posts_df.post_sqmetrage < 30), lit('<30')) \
+modified_posts_df = posts_df.select(['*', \
+        \
+        (when((posts_df.post_sqmetrage < 30), lit('<30')) \
         .when((posts_df.post_sqmetrage >= 30) & (posts_df.post_sqmetrage <50), lit('30-49')) \
         .when((posts_df.post_sqmetrage >= 50) & (posts_df.post_sqmetrage <75), lit('50-74')) \
         .when((posts_df.post_sqmetrage >= 75) & (posts_df.post_sqmetrage <= 100), lit('75-100')) \
-        .otherwise(lit('>100')) \
-        ).withColumn('urgency', \
-    when((posts_df.post_title.contains('pilne')) | (posts_df.post_title.contains('pilnie')), lit('urgent')) \
-    .otherwise(lit('normal')) \
-    ).withColumn('price_per_sqm', (posts_df.post_price) / (posts_df.post_sqmetrage)
-    ).withColumn('date', current_date())
+        .otherwise(lit('>100'))).alias('sqm_bucket'), \
+        \
+        (when((posts_df.post_title.contains('pilne')) | (posts_df.post_title.contains('pilnie')), lit('urgent')) \
+        .otherwise(lit('normal'))).alias('urgency'), \
+        \
+        lit((posts_df.post_price) / (posts_df.post_sqmetrage)).alias('price_per_sqm'), \
+        \
+        lit(current_date()).alias('date')])
 
 # Save Spark df to MySQL
 modified_posts_df.write \
