@@ -19,6 +19,11 @@ os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 
 
+#Setting environmental variables for db credentials
+mysql_username = os.environ.get('MYSQL_USERNAME')
+mysql_password = os.environ.get('MYSQL_PASSWORD')
+
+
 # Connecting to otodom list cities to create list of available cities. Based on that we can later exctract city from common class which include other strings.
 with open('cities.csv', encoding="utf8") as cities_file:
     reader = csv.reader(cities_file)
@@ -120,10 +125,13 @@ modified_posts_df = posts_df.withColumn('sqm_bucket', \
 modified_posts_df.write \
                     .format("jdbc") \
                     .option("url","jdbc:mysql://localhost/properties") \
-                    .option("dbtable","otodom") \
-                    .option("user","SylwesterNowak") \
-                    .option("password","AlienAlien1212!") \
+                    .option("dbtable","mieszkania_sprzedaz") \
+                    .option("user", mysql_username) \
+                    .option("password", mysql_password) \
                     .mode('Append') \
                     .save()
 
-# Zakryć dane logowania & ustawić last page żeby zczytywało z kwadracika & zamienić multiple withColumn na Select & rozbić funkcje
+# Zakryć dane logowania & zamienić multiple withColumn na Select & rozbić funkcje
+
+
+
