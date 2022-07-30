@@ -83,8 +83,8 @@ def append_data(post):
     post_sqmetrage.append(float(post_sq_rooms[3].text.split(' ')[0]))
 
 # 6. Find & append type of post. Can be private or company.
-    post_sq_type = post.find('span', class_='css-13vzu28 e1dxhs6v2')
-    if post_sq_type != None:
+    post_sq_type = post.find('span', class_='css-16zp76g e1dxhs6v2')
+    if post_sq_type == 'Oferta prywatna':
         post_type.append('Private post')
     else:
         post_type.append('Company post')
@@ -131,7 +131,7 @@ modified_posts_df.write \
                     .mode('Append') \
                     .save()
 
-# Zakryć dane logowania & zamienić multiple withColumn na Select & rozbić funkcje
+
 
 
 
