@@ -118,35 +118,82 @@ if __name__ == '__main__':
     Parallel(n_jobs=1)(delayed(append_data)(post, fs_post_titles, fs_post_prices, fs_post_cities, fs_post_sqmetrage, fs_post_rooms, fs_post_type) for post in fs_post_container)
     Parallel(n_jobs=1)(delayed(append_data)(post, rr_post_titles, rr_post_prices, rr_post_cities, rr_post_sqmetrage, rr_post_rooms, rr_post_type) for post in fs_post_container)
 
-# Create dictionary from lists
+# Create dictionaries from lists
 fr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
                'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
                 in zip(fr_post_titles, fr_post_prices, fr_post_cities, fr_post_sqmetrage, fr_post_rooms, fr_post_type)]
 
+fs_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
+               'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
+                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
+                in zip(fs_post_titles, fs_post_prices, fs_post_cities, fs_post_sqmetrage, fs_post_rooms, fs_post_type)]
+
+rr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
+               'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
+                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
+                in zip(rr_post_titles, rr_post_prices, rr_post_cities, rr_post_sqmetrage, rr_post_rooms, rr_post_type)]
+
 # Start spark session, create dataframe from lists and add new conditional columns
 spark = SparkSession.builder.getOrCreate()
 
-posts_df = spark.createDataFrame(fr_posts_dict)
+fr_post_container = spark.createDataFrame(fr_posts_dict)
+fs_post_container = spark.createDataFrame(fs_posts_dict)
+rr_post_container = spark.createDataFrame(rr_posts_dict)
 
-modified_posts_df = posts_df.select(['*', \
+m_fr_post_container = fr_post_container.select(['*', \
         \
-        (when((posts_df.post_sqmetrage < 30), lit('<30')) \
-        .when((posts_df.post_sqmetrage >= 30) & (posts_df.post_sqmetrage <50), lit('30-49')) \
-        .when((posts_df.post_sqmetrage >= 50) & (posts_df.post_sqmetrage <75), lit('50-74')) \
-        .when((posts_df.post_sqmetrage >= 75) & (posts_df.post_sqmetrage <= 100), lit('75-100')) \
+        (when((fr_post_container.post_sqmetrage < 30), lit('<30')) \
+        .when((fr_post_container.post_sqmetrage >= 30) & (fr_post_container.post_sqmetrage <50), lit('30-49')) \
+        .when((fr_post_container.post_sqmetrage >= 50) & (fr_post_container.post_sqmetrage <75), lit('50-74')) \
+        .when((fr_post_container.post_sqmetrage >= 75) & (fr_post_container.post_sqmetrage <= 100), lit('75-100')) \
         .otherwise(lit('>100'))).alias('sqm_bucket'), \
         \
-        (when((posts_df.post_title.contains('pilne')) | (posts_df.post_title.contains('pilnie')), lit('urgent')) \
+        (when((fr_post_container.post_title.contains('pilne')) | (fr_post_container.post_title.contains('pilnie')), lit('urgent')) \
         .otherwise(lit('normal'))).alias('urgency'), \
         \
-        lit((posts_df.post_price) / (posts_df.post_sqmetrage)).alias('price_per_sqm'), \
+        lit((fr_post_container.post_price) / (fr_post_container.post_sqmetrage)).alias('price_per_sqm'), \
         \
-        lit(current_date()).alias('date') \
+        lit(current_date()).alias('date'), \
+        lit('Wynajem').alias('rodzaj') \
+        ])
+
+m_fs_post_container = fs_post_container.select(['*', \
+        \
+        (when((fs_post_container.post_sqmetrage < 30), lit('<30')) \
+        .when((fs_post_container.post_sqmetrage >= 30) & (fs_post_container.post_sqmetrage <50), lit('30-49')) \
+        .when((fs_post_container.post_sqmetrage >= 50) & (fs_post_container.post_sqmetrage <75), lit('50-74')) \
+        .when((fs_post_container.post_sqmetrage >= 75) & (fs_post_container.post_sqmetrage <= 100), lit('75-100')) \
+        .otherwise(lit('>100'))).alias('sqm_bucket'), \
+        \
+        (when((fs_post_container.post_title.contains('pilne')) | (fs_post_container.post_title.contains('pilnie')), lit('urgent')) \
+        .otherwise(lit('normal'))).alias('urgency'), \
+        \
+        lit((fs_post_container.post_price) / (fs_post_container.post_sqmetrage)).alias('price_per_sqm'), \
+        \
+        lit(current_date()).alias('date'), \
+        lit('Sprzedaz').alias('rodzaj') \
+        ])
+
+m_rr_post_container = rr_post_container.select(['*', \
+        \
+        (when((rr_post_container.post_sqmetrage < 30), lit('<30')) \
+        .when((rr_post_container.post_sqmetrage >= 30) & (rr_post_container.post_sqmetrage <50), lit('30-49')) \
+        .when((rr_post_container.post_sqmetrage >= 50) & (rr_post_container.post_sqmetrage <75), lit('50-74')) \
+        .when((rr_post_container.post_sqmetrage >= 75) & (rr_post_container.post_sqmetrage <= 100), lit('75-100')) \
+        .otherwise(lit('>100'))).alias('sqm_bucket'), \
+        \
+        (when((rr_post_container.post_title.contains('pilne')) | (rr_post_container.post_title.contains('pilnie')), lit('urgent')) \
+        .otherwise(lit('normal'))).alias('urgency'), \
+        \
+        lit((rr_post_container.post_price) / (rr_post_container.post_sqmetrage)).alias('price_per_sqm'), \
+        \
+        lit(current_date()).alias('date'), \
+        lit('Pokoj').alias('rodzaj') \
         ])
 
 # Save Spark df to MySQL
-modified_posts_df.write \
+m_rr_post_container.write \
                     .format("jdbc") \
                     .option("url","jdbc:mysql://localhost/properties") \
                     .option("dbtable","mieszkania") \
