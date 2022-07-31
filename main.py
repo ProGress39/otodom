@@ -54,15 +54,18 @@ for page in range(0,2):
     room_rent_htmls = room_rent_htmls + req[:-7]
 
 #Empty arrays to store data
-post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type  = ([] for i in range(6))
+fs_post_titles, fs_post_prices, fs_post_cities, fs_post_sqmetrage, fs_post_rooms, fs_post_type, \
+fr_post_titles, fr_post_prices, fr_post_cities, fr_post_sqmetrage, fr_post_rooms, fr_post_type, \
+rr_post_titles, rr_post_prices, rr_post_cities, rr_post_sqmetrage, rr_post_rooms, rr_post_type, \
+    = ([] for i in range(18))
 
 
 #Append data to empty list
-def append_data(post):
+def append_data(post, title, price, city, sqmetrage, rooms, type):
 
 # 1. Find & append titles
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
-    post_titles.append(post_title)
+    title.append(post_title)
 
 # 2. Find & append prices, number of rooms, square metrage (they're in same span class).
     # Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.     
@@ -74,30 +77,30 @@ def append_data(post):
         post_price_ns = post_price_ns.replace(key, value)
 
     if post_price_ns == 'Zapytajocenę':
-        post_prices.append(None)
+        price.append(None)
     else:
-        post_prices.append(round(int(float(post_price_ns)), 0))
+        price.append(round(int(float(post_price_ns)), 0))
 
 # 3. Find & append cities in common class span. Comparing with goverment list of polish cities.
     post_area = post.find('span', class_ = 'css-17o293g es62z2j9').text.split(',')
     for town in post_area:
         if town.strip() in cities_list:
-            post_cities.append(town.strip())
+            city.append(town.strip())
             break
         else:
             continue
 
 # 4/5. Find & append square metrage and rooms in common class span.
     post_sq_rooms = post.find_all('span', class_='css-rmqm02 eclomwz0')
-    post_rooms.append(int(post_sq_rooms[2].text[0]))
-    post_sqmetrage.append(float(post_sq_rooms[3].text.split(' ')[0]))
+    rooms.append(int(post_sq_rooms[2].text[0]))
+    sqmetrage.append(float(post_sq_rooms[3].text.split(' ')[0]))
 
 # 6. Find & append type of post. Can be private or company.
     post_sq_type = post.find('span', class_='css-16zp76g e1dxhs6v2')
     if post_sq_type == 'Oferta prywatna':
-        post_type.append('Private post')
+        type.append('Private post')
     else:
-        post_type.append('Company post')
+        type.append('Company post')
 
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table
@@ -109,20 +112,22 @@ fs_post_container = flat_sale_soup.find_all('article', class_ = 'css-1th7s4x es6
 fr_post_container = flat_rent_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 rr_post_container = room_rent_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
-# Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from your device.
+# Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from device.
 if __name__ == '__main__':
-    Parallel(n_jobs=1)(delayed(append_data)(post) for post in fs_post_container)
+    Parallel(n_jobs=1)(delayed(append_data)(post, fr_post_titles, fr_post_prices, fr_post_cities, fr_post_sqmetrage, fr_post_rooms, fr_post_type) for post in fs_post_container)
+    Parallel(n_jobs=1)(delayed(append_data)(post, fs_post_titles, fs_post_prices, fs_post_cities, fs_post_sqmetrage, fs_post_rooms, fs_post_type) for post in fs_post_container)
+    Parallel(n_jobs=1)(delayed(append_data)(post, rr_post_titles, rr_post_prices, rr_post_cities, rr_post_sqmetrage, rr_post_rooms, rr_post_type) for post in fs_post_container)
 
 # Create dictionary from lists
-posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
+fr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
                'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
-                in zip(post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type)]
+                in zip(fr_post_titles, fr_post_prices, fr_post_cities, fr_post_sqmetrage, fr_post_rooms, fr_post_type)]
 
 # Start spark session, create dataframe from lists and add new conditional columns
 spark = SparkSession.builder.getOrCreate()
 
-posts_df = spark.createDataFrame(posts_dict)
+posts_df = spark.createDataFrame(fr_posts_dict)
 
 modified_posts_df = posts_df.select(['*', \
         \
