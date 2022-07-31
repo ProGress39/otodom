@@ -35,13 +35,23 @@ with open('cities.csv', encoding="utf8") as cities_file:
                 cities_list.append(city)
 
 
-# Connect to otodom webpage and append htmls to one string
-all_pages_html = ''
-for page in range(0,2):
-    URL_Site = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}&limit=1000'.format(page)
-    req = requests.get(URL_Site).text
-    all_pages_html = all_pages_html + req[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
+# Connect to otodom webpage and append htmls to strings. Seperate variables for sales, rents and room rents
+flat_sale_htmls, flat_rent_htmls, room_rent_htmls = ('' for i in range(3))
 
+for page in range(0,2):
+    sale_url = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}&limit=1000'.format(page)
+    req = requests.get(sale_url).text
+    flat_sale_htmls = flat_sale_htmls + req[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
+
+for page in range(0,2):
+    rent_url = 'https://www.otodom.pl/pl/oferty/wynajem/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=wynajem&searchingCriteria=mieszkanie&page={}&limit=1000'.format(page)
+    req = requests.get(rent_url).text
+    flat_rent_htmls = flat_rent_htmls + req[:-7]
+
+for page in range(0,2):
+    room_url = 'https://www.otodom.pl/pl/oferty/wynajem/pokoj/cala-polska?market=ALL&ownerTypeSingleSelect=ALL&viewType=listing&lang=pl&searchingCriteria=wynajem&searchingCriteria=pokoj&page={}&limit=400'.format(page)
+    req = requests.get(room_url).text
+    room_rent_htmls = room_rent_htmls + req[:-7]
 
 #Empty arrays to store data
 post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type  = ([] for i in range(6))
@@ -91,7 +101,7 @@ def append_data(post):
 
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table
-main_soup = BeautifulSoup(all_pages_html, 'lxml')
+main_soup = BeautifulSoup(flat_sale_htmls, 'lxml')
 post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from your device.
@@ -129,13 +139,10 @@ modified_posts_df = posts_df.select(['*', \
 modified_posts_df.write \
                     .format("jdbc") \
                     .option("url","jdbc:mysql://localhost/properties") \
-                    .option("dbtable","mieszkania_sprzedaz") \
+                    .option("dbtable","mieszkania") \
                     .option("user", mysql_username) \
                     .option("password", mysql_password) \
                     .mode('Append') \
                     .save()
-
-
-
 
 
