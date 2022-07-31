@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from pyparsing import null_debug_action
 import requests
 import unicodedata
 import csv
@@ -72,7 +73,7 @@ def append_data(post, title, price, city, sqmetrage, rooms, type):
     post_price = post.find('span', class_ = 'css-rmqm02 eclomwz0').text
     post_price_ns = unicodedata.normalize('NFKD', post_price)
 
-    post_price_replace = {' ':'', 'zł': '','€':'','$':'', ',':'.'}
+    post_price_replace = {' ':'', 'zł': '','€':'','$':'', ',':'.', '/mc':''}
     for key, value in post_price_replace.items():
         post_price_ns = post_price_ns.replace(key, value)
 
@@ -92,8 +93,15 @@ def append_data(post, title, price, city, sqmetrage, rooms, type):
 
 # 4/5. Find & append square metrage and rooms in common class span.
     post_sq_rooms = post.find_all('span', class_='css-rmqm02 eclomwz0')
-    rooms.append(int(post_sq_rooms[2].text[0]))
-    sqmetrage.append(float(post_sq_rooms[3].text.split(' ')[0]))
+    if len(post_sq_rooms) == 4:
+        rooms.append(int(post_sq_rooms[2].text[0]))
+        sqmetrage.append(float(post_sq_rooms[3].text.split(' ')[0]))
+    elif len(post_sq_rooms) == 3:
+        rooms.append(int(post_sq_rooms[1].text[0]))
+        sqmetrage.append(float(post_sq_rooms[2].text.split(' ')[0]))
+    else:
+        rooms.append(0)
+        sqmetrage.append(0)
 
 # 6. Find & append type of post. Can be private or company.
     post_sq_type = post.find('span', class_='css-16zp76g e1dxhs6v2')
@@ -114,9 +122,9 @@ rr_post_container = room_rent_soup.find_all('article', class_ = 'css-1th7s4x es6
 
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from device.
 if __name__ == '__main__':
-    Parallel(n_jobs=1)(delayed(append_data)(post, fr_post_titles, fr_post_prices, fr_post_cities, fr_post_sqmetrage, fr_post_rooms, fr_post_type) for post in fs_post_container)
+    Parallel(n_jobs=1)(delayed(append_data)(post, fr_post_titles, fr_post_prices, fr_post_cities, fr_post_sqmetrage, fr_post_rooms, fr_post_type) for post in fr_post_container)
     Parallel(n_jobs=1)(delayed(append_data)(post, fs_post_titles, fs_post_prices, fs_post_cities, fs_post_sqmetrage, fs_post_rooms, fs_post_type) for post in fs_post_container)
-    Parallel(n_jobs=1)(delayed(append_data)(post, rr_post_titles, rr_post_prices, rr_post_cities, rr_post_sqmetrage, rr_post_rooms, rr_post_type) for post in fs_post_container)
+    Parallel(n_jobs=1)(delayed(append_data)(post, rr_post_titles, rr_post_prices, rr_post_cities, rr_post_sqmetrage, rr_post_rooms, rr_post_type) for post in rr_post_container)
 
 # Create dictionaries from lists
 fr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
@@ -193,6 +201,24 @@ m_rr_post_container = rr_post_container.select(['*', \
         ])
 
 # Save Spark df to MySQL
+m_fr_post_container.write \
+                    .format("jdbc") \
+                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("dbtable","mieszkania") \
+                    .option("user", mysql_username) \
+                    .option("password", mysql_password) \
+                    .mode('Append') \
+                    .save()
+
+m_fs_post_container.write \
+                    .format("jdbc") \
+                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("dbtable","mieszkania") \
+                    .option("user", mysql_username) \
+                    .option("password", mysql_password) \
+                    .mode('Append') \
+                    .save()
+
 m_rr_post_container.write \
                     .format("jdbc") \
                     .option("url","jdbc:mysql://localhost/properties") \
