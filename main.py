@@ -101,12 +101,17 @@ def append_data(post):
 
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table
-main_soup = BeautifulSoup(flat_sale_htmls, 'lxml')
-post_container = main_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
+flat_sale_soup = BeautifulSoup(flat_sale_htmls, 'lxml')
+flat_rent_soup = BeautifulSoup(flat_rent_htmls, 'lxml')
+room_rent_soup = BeautifulSoup(room_rent_htmls, 'lxml')
+
+fs_post_container = flat_sale_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
+fr_post_container = flat_rent_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
+rr_post_container = room_rent_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from your device.
 if __name__ == '__main__':
-    Parallel(n_jobs=1)(delayed(append_data)(post) for post in post_container)
+    Parallel(n_jobs=1)(delayed(append_data)(post) for post in fs_post_container)
 
 # Create dictionary from lists
 posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
