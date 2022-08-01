@@ -39,20 +39,22 @@ with open('cities.csv', encoding="utf8") as cities_file:
 # Connect to otodom webpage and append htmls to strings. Seperate variables for sales, rents and room rents
 flat_sale_htmls, flat_rent_htmls, room_rent_htmls = ('' for i in range(3))
 
-for page in range(0,2):
+for page in range(9,10):
     sale_url = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}&limit=1000'.format(page)
-    req = requests.get(sale_url).text
-    flat_sale_htmls = flat_sale_htmls + req[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
-
-for page in range(0,2):
     rent_url = 'https://www.otodom.pl/pl/oferty/wynajem/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=wynajem&searchingCriteria=mieszkanie&page={}&limit=1000'.format(page)
-    req = requests.get(rent_url).text
-    flat_rent_htmls = flat_rent_htmls + req[:-7]
-
-for page in range(0,2):
     room_url = 'https://www.otodom.pl/pl/oferty/wynajem/pokoj/cala-polska?market=ALL&ownerTypeSingleSelect=ALL&viewType=listing&lang=pl&searchingCriteria=wynajem&searchingCriteria=pokoj&page={}&limit=400'.format(page)
-    req = requests.get(room_url).text
-    room_rent_htmls = room_rent_htmls + req[:-7]
+
+    flat_sale_htmls = flat_sale_htmls + requests.get(sale_url).text[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
+
+    try:
+        flat_rent_htmls = flat_rent_htmls + requests.get(rent_url).text[:-7]
+    except:
+        pass
+
+    try:
+        room_rent_htmls = room_rent_htmls + requests.get(room_url).text[:-7]
+    except:
+        pass
 
 #Empty arrays to store data
 fs_post_titles, fs_post_prices, fs_post_cities, fs_post_sqmetrage, fs_post_rooms, fs_post_type, \
