@@ -39,13 +39,13 @@ with open('cities.csv', encoding="utf8") as cities_file:
 # Connect to otodom webpage and append htmls to strings. Seperate variables for sales, rents and room rents
 flat_sale_htmls, flat_rent_htmls, room_rent_htmls = ('' for i in range(3))
 
-for page in range(9,10):
+for page in range(0, 1):
     sale_url = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&page={}&limit=1000'.format(page)
     rent_url = 'https://www.otodom.pl/pl/oferty/wynajem/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=wynajem&searchingCriteria=mieszkanie&page={}&limit=1000'.format(page)
     room_url = 'https://www.otodom.pl/pl/oferty/wynajem/pokoj/cala-polska?market=ALL&ownerTypeSingleSelect=ALL&viewType=listing&lang=pl&searchingCriteria=wynajem&searchingCriteria=pokoj&page={}&limit=400'.format(page)
 
+    # Rooms & rents have less pages of posts so we need to manage it with tryexcept within sales pages range.
     flat_sale_htmls = flat_sale_htmls + requests.get(sale_url).text[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
-
     try:
         flat_rent_htmls = flat_rent_htmls + requests.get(rent_url).text[:-7]
     except:
@@ -55,6 +55,7 @@ for page in range(9,10):
         room_rent_htmls = room_rent_htmls + requests.get(room_url).text[:-7]
     except:
         pass
+
 
 #Empty arrays to store data
 fs_post_titles, fs_post_prices, fs_post_cities, fs_post_sqmetrage, fs_post_rooms, fs_post_type, \
@@ -113,14 +114,11 @@ def append_data(post, title, price, city, sqmetrage, rooms, type):
         type.append('Company post')
 
 
-# Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table
-flat_sale_soup = BeautifulSoup(flat_sale_htmls, 'lxml')
-flat_rent_soup = BeautifulSoup(flat_rent_htmls, 'lxml')
-room_rent_soup = BeautifulSoup(room_rent_htmls, 'lxml')
+# Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table.
+fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('article', class_ = 'css-1th7s4x es62z2j16')
+fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('article', class_ = 'css-1th7s4x es62z2j16')
+rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
-fs_post_container = flat_sale_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
-fr_post_container = flat_rent_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
-rr_post_container = room_rent_soup.find_all('article', class_ = 'css-1th7s4x es62z2j16')
 
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from device.
 if __name__ == '__main__':
@@ -229,5 +227,3 @@ m_rr_post_container.write \
                     .option("password", mysql_password) \
                     .mode('Append') \
                     .save()
-
-
