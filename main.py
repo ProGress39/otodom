@@ -227,3 +227,5 @@ m_rr_post_container.write \
                     .option("password", mysql_password) \
                     .mode('Append') \
                     .save()
+
+#Wprowadzić ograniczenie na 3 promoted ogłoszenia
