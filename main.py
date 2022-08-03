@@ -68,12 +68,12 @@ rr_post_titles, rr_post_prices, rr_post_cities, rr_post_sqmetrage, rr_post_rooms
 def append_data(post, title, price, city, sqmetrage, rooms, type):
 
 # 1. Find & append titles
-    post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j11').text
+    post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j13').text
     title.append(post_title)
 
 # 2. Find & append prices, number of rooms, square metrage (they're in same span class).
     # Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.     
-    post_price = post.find('span', class_ = 'css-rmqm02 eclomwz0').text
+    post_price = post.find('span', class_ = 'css-s8wpzb eclomwz1').text
     post_price_ns = unicodedata.normalize('NFKD', post_price)
 
     post_price_replace = {' ':'', 'zł': '','€':'','$':'', ',':'.', '/mc':''}
@@ -86,7 +86,7 @@ def append_data(post, title, price, city, sqmetrage, rooms, type):
         price.append(round(int(float(post_price_ns)), 0))
 
 # 3. Find & append cities in common class span. Comparing with goverment list of polish cities.
-    post_area = post.find('span', class_ = 'css-17o293g es62z2j9').text.split(',')
+    post_area = post.find('span', class_ = 'css-17o293g es62z2j11').text.split(',')
     for town in post_area:
         if town.strip() in cities_list:
             city.append(town.strip())
@@ -95,7 +95,7 @@ def append_data(post, title, price, city, sqmetrage, rooms, type):
             continue
 
 # 4/5. Find & append square metrage and rooms in common class span.
-    post_sq_rooms = post.find_all('span', class_='css-rmqm02 eclomwz0')
+    post_sq_rooms = post.find_all('span', class_='css-s8wpzb eclomwz1')
     if len(post_sq_rooms) == 4:
         rooms.append(int(post_sq_rooms[2].text[0]))
         sqmetrage.append(float(post_sq_rooms[3].text.split(' ')[0]))
@@ -115,9 +115,9 @@ def append_data(post, title, price, city, sqmetrage, rooms, type):
 
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table.
-fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('article', class_ = 'css-1th7s4x es62z2j16')
-fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('article', class_ = 'css-1th7s4x es62z2j16')
-rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', class_ = 'css-1th7s4x es62z2j16')
+fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('article', class_ = 'css-1rtqihe es62z2j18')
+fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('article', class_ = 'css-1rtqihe es62z2j18')
+rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', class_ = 'css-1rtqihe es62z2j18')
 
 
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from device.
