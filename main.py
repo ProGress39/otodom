@@ -57,11 +57,11 @@ for page in range(0, 1):
         pass
 
 
-#Empty arrays to store data
-fs_post_titles, fs_post_prices, fs_post_cities, fs_post_sqmetrage, fs_post_rooms, fs_post_type, \
-fr_post_titles, fr_post_prices, fr_post_cities, fr_post_sqmetrage, fr_post_rooms, fr_post_type, \
-rr_post_titles, rr_post_prices, rr_post_cities, rr_post_sqmetrage, rr_post_rooms, rr_post_type, \
-    = ([] for i in range(18))
+#Empty lists to store details data, 6 for every type of post (rent, sale, room rent)
+post_details = []
+
+for i in range(18):
+    post_details.append([])
 
 
 #Append data to empty list
@@ -122,25 +122,25 @@ rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', c
 
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from device.
 if __name__ == '__main__':
-    Parallel(n_jobs=1)(delayed(append_data)(post, fr_post_titles, fr_post_prices, fr_post_cities, fr_post_sqmetrage, fr_post_rooms, fr_post_type) for post in fr_post_container)
-    Parallel(n_jobs=1)(delayed(append_data)(post, fs_post_titles, fs_post_prices, fs_post_cities, fs_post_sqmetrage, fs_post_rooms, fs_post_type) for post in fs_post_container)
-    Parallel(n_jobs=1)(delayed(append_data)(post, rr_post_titles, rr_post_prices, rr_post_cities, rr_post_sqmetrage, rr_post_rooms, rr_post_type) for post in rr_post_container)
+    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[0], post_details[1], post_details[2], post_details[3], post_details[4], post_details[5]) for post in fr_post_container)
+    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[6], post_details[7], post_details[8], post_details[9], post_details[10], post_details[11]) for post in fs_post_container)
+    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[12], post_details[13], post_details[14], post_details[15], post_details[16], post_details[17]) for post in rr_post_container)
 
 # Create dictionaries from lists
 fr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
                'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
-                in zip(fr_post_titles, fr_post_prices, fr_post_cities, fr_post_sqmetrage, fr_post_rooms, fr_post_type)]
+                in zip(post_details[0], post_details[1], post_details[2], post_details[3], post_details[4], post_details[5])]
 
 fs_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
                'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
-                in zip(fs_post_titles, fs_post_prices, fs_post_cities, fs_post_sqmetrage, fs_post_rooms, fs_post_type)]
+                in zip(post_details[6], post_details[7], post_details[8], post_details[9], post_details[10], post_details[11])]
 
 rr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
                'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
-                in zip(rr_post_titles, rr_post_prices, rr_post_cities, rr_post_sqmetrage, rr_post_rooms, rr_post_type)]
+                in zip(post_details[12], post_details[13], post_details[14], post_details[15], post_details[16], post_details[17])]
 
 # Start spark session, create dataframe from lists and add new conditional columns
 spark = SparkSession.builder.getOrCreate()
