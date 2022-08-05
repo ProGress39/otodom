@@ -115,9 +115,9 @@ def append_data(post, title, price, city, sqmetrage, rooms, type):
 
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table.
-fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('article', class_ = 'css-1rtqihe es62z2j18')
-fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('article', class_ = 'css-1rtqihe es62z2j18')
-rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', class_ = 'css-1rtqihe es62z2j18')
+fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('article', class_ = ['css-1rtqihe es62z2j18', 'css-e6zjf7 es62z2j18'])
+fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('article', class_ = ['css-1rtqihe es62z2j18', 'css-e6zjf7 es62z2j18'])
+rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', class_ = ['css-1rtqihe es62z2j18', 'css-e6zjf7 es62z2j18'])
 
 
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from device.
