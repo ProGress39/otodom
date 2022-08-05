@@ -228,4 +228,4 @@ m_rr_post_container.write \
                     .mode('Append') \
                     .save()
 
-#Wprowadzić ograniczenie na 3 promoted ogłoszenia
+#Wprowadzić ograniczenie na 3 promoted ogłoszenia, błąd w wczytywaniu ofert
