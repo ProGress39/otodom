@@ -119,7 +119,6 @@ fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('article', c
 fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('article', class_ = ['css-1rtqihe es62z2j18', 'css-e6zjf7 es62z2j18'])
 rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', class_ = ['css-1rtqihe es62z2j18', 'css-e6zjf7 es62z2j18'])
 
-
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from device.
 if __name__ == '__main__':
     Parallel(n_jobs=1)(delayed(append_data)(post, post_details[0], post_details[1], post_details[2], post_details[3], post_details[4], post_details[5]) for post in fr_post_container)
@@ -228,4 +227,4 @@ m_rr_post_container.write \
                     .mode('Append') \
                     .save()
 
-#Wprowadzić ograniczenie na 3 promoted ogłoszenia, błąd w wczytywaniu ofert
+#Wprowadzić ograniczenie na 3 promoted ogłoszenia, błąd w wczytywaniu ofert, FUNKCJA W FUNKCJI ROBIENIE ZUPKI
