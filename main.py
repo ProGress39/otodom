@@ -142,13 +142,13 @@ rr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_ci
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
                 in zip(post_details[12], post_details[13], post_details[14], post_details[15], post_details[16], post_details[17])]
 
-# Start spark session, create dataframe from lists and add new conditional columns. Could use pandas here, but project is for CV, so want to show Spark basic knowledge.
+
+# Start spark session, create dataframes from lists and add new conditional columns. Could use pandas here, but project is for CV, so want to show Spark basic knowledge.
+# Save dataframes to local MySQL database
+
 spark = SparkSession.builder.getOrCreate()
 
 fr_post_container = spark.createDataFrame(fr_posts_dict)
-fs_post_container = spark.createDataFrame(fs_posts_dict)
-rr_post_container = spark.createDataFrame(rr_posts_dict)
-
 m_fr_post_container = fr_post_container.select(['*', \
         \
         (when((fr_post_container.post_sqmetrage < 30), lit('<30')) \
@@ -166,6 +166,17 @@ m_fr_post_container = fr_post_container.select(['*', \
         lit('Wynajem').alias('rodzaj') \
         ])
 
+m_fr_post_container.write \
+                    .format("jdbc") \
+                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("dbtable","mieszkania") \
+                    .option("user", mysql_username) \
+                    .option("password", mysql_password) \
+                    .mode('Append') \
+                    .save()
+
+
+fs_post_container = spark.createDataFrame(fs_posts_dict)
 m_fs_post_container = fs_post_container.select(['*', \
         \
         (when((fs_post_container.post_sqmetrage < 30), lit('<30')) \
@@ -183,6 +194,17 @@ m_fs_post_container = fs_post_container.select(['*', \
         lit('Sprzedaz').alias('rodzaj') \
         ])
 
+m_fs_post_container.write \
+                    .format("jdbc") \
+                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("dbtable","mieszkania") \
+                    .option("user", mysql_username) \
+                    .option("password", mysql_password) \
+                    .mode('Append') \
+                    .save()
+
+
+rr_post_container = spark.createDataFrame(rr_posts_dict)
 m_rr_post_container = rr_post_container.select(['*', \
         \
         (when((rr_post_container.post_sqmetrage < 30), lit('<30')) \
@@ -199,25 +221,6 @@ m_rr_post_container = rr_post_container.select(['*', \
         lit(current_date()).alias('date'), \
         lit('Pokoj').alias('rodzaj') \
         ])
-
-# Save Spark df to MySQL
-m_fr_post_container.write \
-                    .format("jdbc") \
-                    .option("url","jdbc:mysql://localhost/properties") \
-                    .option("dbtable","mieszkania") \
-                    .option("user", mysql_username) \
-                    .option("password", mysql_password) \
-                    .mode('Append') \
-                    .save()
-
-m_fs_post_container.write \
-                    .format("jdbc") \
-                    .option("url","jdbc:mysql://localhost/properties") \
-                    .option("dbtable","mieszkania") \
-                    .option("user", mysql_username) \
-                    .option("password", mysql_password) \
-                    .mode('Append') \
-                    .save()
 
 m_rr_post_container.write \
                     .format("jdbc") \
