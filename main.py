@@ -12,6 +12,7 @@ from joblib import Parallel, delayed
 import joblib
 import pickle
 from pyspark.sql.functions import when, lit, current_date
+import pandas as pd
 
 sys.setrecursionlimit(20000)
 
@@ -141,7 +142,7 @@ rr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_ci
                 for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
                 in zip(post_details[12], post_details[13], post_details[14], post_details[15], post_details[16], post_details[17])]
 
-# Start spark session, create dataframe from lists and add new conditional columns
+# Start spark session, create dataframe from lists and add new conditional columns. Could use pandas here, but project is for CV, so want to show Spark basic knowledge.
 spark = SparkSession.builder.getOrCreate()
 
 fr_post_container = spark.createDataFrame(fr_posts_dict)
@@ -227,4 +228,4 @@ m_rr_post_container.write \
                     .mode('Append') \
                     .save()
 
-#Wprowadzić ograniczenie na 3 promoted ogłoszenia, błąd w wczytywaniu ofert, FUNKCJA W FUNKCJI ROBIENIE ZUPKI
+#Wprowadzić ograniczenie na 3 promoted ogłoszenia, błąd w wczytywaniu ofert
