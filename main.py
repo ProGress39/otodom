@@ -45,7 +45,7 @@ for page in range(0, 1):
     rent_url = 'https://www.otodom.pl/pl/oferty/wynajem/mieszkanie/cala-polska?market=ALL&viewType=listing&lang=pl&searchingCriteria=wynajem&searchingCriteria=mieszkanie&page={}&limit=1000'.format(page)
     room_url = 'https://www.otodom.pl/pl/oferty/wynajem/pokoj/cala-polska?market=ALL&ownerTypeSingleSelect=ALL&viewType=listing&lang=pl&searchingCriteria=wynajem&searchingCriteria=pokoj&page={}&limit=400'.format(page)
 
-    # Rooms & rents have less pages of posts so we need to manage it with tryexcept within sales pages range.
+    # Rooms & rents have much less pages of posts so we need to manage it with tryexcept within sales pages range.
     flat_sale_htmls = flat_sale_htmls + requests.get(sale_url).text[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
     try:
         flat_rent_htmls = flat_rent_htmls + requests.get(rent_url).text[:-7]
@@ -122,9 +122,9 @@ rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', c
 
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from device.
 if __name__ == '__main__':
-    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[0], post_details[1], post_details[2], post_details[3], post_details[4], post_details[5]) for post in fr_post_container)
-    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[6], post_details[7], post_details[8], post_details[9], post_details[10], post_details[11]) for post in fs_post_container)
-    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[12], post_details[13], post_details[14], post_details[15], post_details[16], post_details[17]) for post in rr_post_container)
+    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[0], post_details[1], post_details[2], post_details[3], post_details[4], post_details[5]) for post in fr_post_container[3:])
+    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[6], post_details[7], post_details[8], post_details[9], post_details[10], post_details[11]) for post in fs_post_container[3:])
+    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[12], post_details[13], post_details[14], post_details[15], post_details[16], post_details[17]) for post in rr_post_container[3:])
 
 # Create dictionaries from lists
 fr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
