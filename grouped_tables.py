@@ -16,4 +16,4 @@ all_data_df = spark.read.format('jdbc') \
                     .option("dbtable","mieszkania") \
                     .load()
 
-all_data_df.show()
+all_data_df.groupBy('post_city').agg(avg('post_price'))
