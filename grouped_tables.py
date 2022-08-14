@@ -7,7 +7,8 @@ mysql_password = os.environ.get('MYSQL_PASSWORD')
 
 spark = SparkSession.builder.master('local').getOrCreate()
 
-mysql_connection = spark.read.format('jdbc') \
+# Read MySQL table with raw apartaments data into spark df
+all_data_df = spark.read.format('jdbc') \
                     .option('url', 'jdbc:mysql://localhost/properties') \
                     .option('driver', 'com.mysql.jdbc.Driver') \
                     .option("user", mysql_username) \
@@ -15,4 +16,4 @@ mysql_connection = spark.read.format('jdbc') \
                     .option("dbtable","mieszkania") \
                     .load()
 
-mysql_connection.show()
+all_data_df.show()
