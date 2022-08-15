@@ -1,5 +1,5 @@
 import pyspark
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, functions
 import os
 
 mysql_username = os.environ.get('MYSQL_USERNAME')
@@ -16,4 +16,8 @@ all_data_df = spark.read.format('jdbc') \
                     .option("dbtable","mieszkania") \
                     .load()
 
-all_data_df.groupBy('post_city').agg(avg('post_price'))
+all_data_df.groupBy('post_city').agg(functions.avg('post_price'), functions.min('post_price'), functions.max('post_price'), \
+                                     functions.avg('post_rooms'), \
+                                     functions.avg('post_sqmetrage'), functions.min('post_sqmetrage'), functions.max('post_sqmetrage'), \
+                                     functions.avg('price_per_sqm'), functions.min('price_per_sqm'), functions.max('price_per_sqm') \
+                                     ).show()
