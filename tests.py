@@ -11,7 +11,7 @@ import sys
 from joblib import Parallel, delayed
 import joblib
 import pickle
-from pyspark.sql.functions import when, lit, current_date
+from pyspark.sql.pyspf import when, lit, current_date
 
 sys.setrecursionlimit(20000)
 
