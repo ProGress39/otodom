@@ -31,3 +31,5 @@ main_cities_list = ['Białystok', 'Bydgoszcz', 'Gdańsk', 'Gorzów Wielkopolski'
                     'Rzeszów', 'Szczecin', 'Toruń', 'Warszawa', 'Wrocław', 'Zielona Góra']
 
 main_cities_grouped = city_grouped.filter(city_grouped.post_city.isin(main_cities_list))
+
+# Grupowanie w koszyki ceny, ceny za metr
