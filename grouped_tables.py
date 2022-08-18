@@ -17,12 +17,21 @@ all_data_df = spark.read.format('jdbc') \
                     .option("dbtable","mieszkania") \
                     .load()
 
-# Df with data grouped by city and post type (rent/sale). Details.
+# Df with data grouped by city and post type (rent/sale). Details. Send to MySQL database.
 city_grouped = all_data_df.groupBy('post_city', 'rodzaj').agg(pyspf.round(pyspf.avg('post_price'), 0).alias('avg_price'), pyspf.min('post_price').alias('min_price'), pyspf.max('post_price').alias('max_price'), \
                                             pyspf.round(pyspf.avg('post_rooms'), 0).alias('avg_rooms'), \
                                             pyspf.round(pyspf.avg('post_sqmetrage'), 0).alias('avg_sqmetrage'), pyspf.min('post_sqmetrage').alias('min_sqmetrage'), pyspf.max('post_sqmetrage').alias('max_sqmetrage'), \
                                             pyspf.round(pyspf.avg('price_per_sqm'), 0).alias('avg_price_sqm'), pyspf.min('price_per_sqm').alias('min_price_sqm'), pyspf.max('price_per_sqm').alias('max_price_sqm') \
                                             ).withColumn('download_date', lit(current_date()))
+
+city_grouped.write \
+                    .format("jdbc") \
+                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("dbtable","podsumowanie") \
+                    .option("user", mysql_username) \
+                    .option("password", mysql_password) \
+                    .mode('Append') \
+                    .save()
 
 
 # List of main cities in PL. Df with city_grouped df filtered by them.
@@ -32,4 +41,12 @@ main_cities_list = ['Białystok', 'Bydgoszcz', 'Gdańsk', 'Gorzów Wielkopolski'
 
 main_cities_grouped = city_grouped.filter(city_grouped.post_city.isin(main_cities_list))
 
-# Grupowanie w koszyki ceny, ceny za metr
+main_cities_grouped.write \
+                    .format("jdbc") \
+                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("dbtable","podsumowanie_main_cities") \
+                    .option("user", mysql_username) \
+                    .option("password", mysql_password) \
+                    .mode('Append') \
+                    .save()
+
