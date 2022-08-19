@@ -1,1 +1,41 @@
-# podłączyć olx do bazy
+from bs4 import BeautifulSoup
+import lxml.html
+import os
+import sys
+import pandas as pd
+import csv
+import requests
+
+#Setting environmental variables for db credentials
+mysql_username = os.environ.get('MYSQL_USERNAME')
+mysql_password = os.environ.get('MYSQL_PASSWORD')
+
+# Connecting to list of polish cities to create list of available cities. Based on that we can later exctract city from common class which include other strings.
+with open('cities.csv', encoding="utf8") as cities_file:
+    reader = csv.reader(cities_file)
+    cities = list(reader)
+    cities_list = []
+    for city_listed in cities:
+        for city in city_listed:
+            if city != '':
+                cities_list.append(city)
+
+# Connect to olx webpage and append htmls to strings. Seperate variables for sales, rents and room rents
+flat_sale_htmls, flat_rent_htmls, room_rent_htmls = ('' for i in range(3))
+
+for page in range(0, 1):
+    sale_url = 'https://www.olx.pl/d/nieruchomosci/mieszkania/wynajem/?page={}'.format(page)
+    rent_url = 'https://www.olx.pl/d/nieruchomosci/mieszkania/wynajem/?page={}'.format(page)
+    room_url = 'https://www.olx.pl/d/nieruchomosci/stancje-pokoje/?page={}'.format(page)
+
+    # Rooms & rents have much less pages of posts so we need to manage it with tryexcept within sales pages range.
+    flat_sale_htmls = flat_sale_htmls + requests.get(sale_url).text[:-7] #-7 to remove </html> as lxml parser doesn't work properly with it.
+    try:
+        flat_rent_htmls = flat_rent_htmls + requests.get(rent_url).text[:-7]
+    except:
+        pass
+
+    try:
+        room_rent_htmls = room_rent_htmls + requests.get(room_url).text[:-7]
+    except:
+        pass

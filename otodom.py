@@ -26,7 +26,7 @@ mysql_username = os.environ.get('MYSQL_USERNAME')
 mysql_password = os.environ.get('MYSQL_PASSWORD')
 
 
-# Connecting to otodom list cities to create list of available cities. Based on that we can later exctract city from common class which include other strings.
+# Connecting to list of polish cities to create list of available cities. Based on that we can later exctract city from common class which include other strings.
 with open('cities.csv', encoding="utf8") as cities_file:
     reader = csv.reader(cities_file)
     cities = list(reader)
@@ -57,12 +57,6 @@ for page in range(0, 1):
     except:
         pass
 
-
-#Empty lists to store details data, 6 for every type of post (rent, sale, room rent)
-post_details = []
-
-for i in range(18):
-    post_details.append([])
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table.
 fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('article', class_ = ['css-1rtqihe es62z2j18', 'css-e6zjf7 es62z2j18'])
@@ -118,6 +112,12 @@ def append_data(post, title, price, city, sqmetrage, rooms, type):
     else:
         type.append('Company post')
 
+#Empty lists to store details data, 6 for every type of post (rent, sale, room rent)
+post_details = []
+
+for i in range(18):
+    post_details.append([])
+
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from device. [3:] to skip promoted offers
 if __name__ == '__main__':
     Parallel(n_jobs=1)(delayed(append_data)(post, post_details[0], post_details[1], post_details[2], post_details[3], post_details[4], post_details[5]) for post in fr_post_container[3:])
@@ -160,7 +160,7 @@ m_fr_post_container = fr_post_container.select(['*', \
         \
         lit((fr_post_container.post_price) / (fr_post_container.post_sqmetrage)).alias('price_per_sqm'), \
         \
-        lit(current_date()).alias('date'), \
+        lit(current_date()).alias('download_date'), \
         lit('Wynajem').alias('rodzaj') \
         ])
 
@@ -188,7 +188,7 @@ m_fs_post_container = fs_post_container.select(['*', \
         \
         lit((fs_post_container.post_price) / (fs_post_container.post_sqmetrage)).alias('price_per_sqm'), \
         \
-        lit(current_date()).alias('date'), \
+        lit(current_date()).alias('download_date'), \
         lit('Sprzedaz').alias('rodzaj') \
         ])
 
@@ -216,7 +216,7 @@ m_rr_post_container = rr_post_container.select(['*', \
         \
         lit((rr_post_container.post_price) / (rr_post_container.post_sqmetrage)).alias('price_per_sqm'), \
         \
-        lit(current_date()).alias('date'), \
+        lit(current_date()).alias('download_date'), \
         lit('Pokoj').alias('rodzaj') \
         ])
 
