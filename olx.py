@@ -1,0 +1,1 @@
+# podłączyć olx do bazy
