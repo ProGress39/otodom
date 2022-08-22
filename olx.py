@@ -7,6 +7,8 @@ import csv
 import requests
 import unicodedata
 
+sys.setrecursionlimit(20000)
+
 #Setting environmental variables for db credentials
 mysql_username = os.environ.get('MYSQL_USERNAME')
 mysql_password = os.environ.get('MYSQL_PASSWORD')
@@ -43,9 +45,9 @@ for page in range(0, 1):
 
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table.
-fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('article', class_ = ['css-9nzgu8'])
-fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('article', class_ = ['css-9nzgu8'])
-rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', class_ = ['css-9nzgu8'])
+fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('div', class_ = ['css-9nzgu8'])
+fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('div', class_ = ['css-9nzgu8'])
+rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('div', class_ = ['css-9nzgu8'])
 
 #Append data to empty list function
 def append_data(post, title, price):
@@ -58,7 +60,16 @@ def append_data(post, title, price):
     # Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.     
     post_price = post.find('p', class_ = 'css-wpfvmn-Text eu5v0x0').text
     post_price_ns = unicodedata.normalize('NFKD', post_price)
+
+    post_price_replace = {' ':'', 'zł': '', 'donegocjacji' : ''}
+    for key, value in post_price_replace.items():
+        post_price_ns = post_price_ns.replace(key, value)
+
     price.append(round(int(float(post_price_ns)), 0))
 
+title = []
+price = []
 
+for post in fr_post_container:
+    append_data(post, title, price)
 
