@@ -5,6 +5,7 @@ import sys
 import pandas as pd
 import csv
 import requests
+import unicodedata
 
 #Setting environmental variables for db credentials
 mysql_username = os.environ.get('MYSQL_USERNAME')
@@ -45,3 +46,19 @@ for page in range(0, 1):
 fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('article', class_ = ['css-9nzgu8'])
 fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('article', class_ = ['css-9nzgu8'])
 rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', class_ = ['css-9nzgu8'])
+
+#Append data to empty list function
+def append_data(post, title, price):
+
+# 1. Find & append titles
+    post_title = post.find('h6', class_ = 'css-v3vynn-Text eu5v0x0').text
+    title.append(post_title)
+
+# 2. Find & append prices, number of rooms, square metrage (they're in same span class).
+    # Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.     
+    post_price = post.find('p', class_ = 'css-wpfvmn-Text eu5v0x0').text
+    post_price_ns = unicodedata.normalize('NFKD', post_price)
+    price.append(round(int(float(post_price_ns)), 0))
+
+
+
