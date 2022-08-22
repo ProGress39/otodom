@@ -39,3 +39,9 @@ for page in range(0, 1):
         room_rent_htmls = room_rent_htmls + requests.get(room_url).text[:-7]
     except:
         pass
+
+
+# Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table.
+fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('article', class_ = ['css-9nzgu8'])
+fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('article', class_ = ['css-9nzgu8'])
+rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', class_ = ['css-9nzgu8'])
