@@ -16,7 +16,7 @@ mysql_password = os.environ.get('MYSQL_PASSWORD')
 # Connect to olx webpage and append htmls to strings. Seperate variables for sales, rents and room rents
 flat_sale_htmls, flat_rent_htmls, room_rent_htmls = ('' for i in range(3))
 
-for page in range(0, 1):
+for page in range(2, 3):
     sale_url = 'https://www.olx.pl/d/nieruchomosci/mieszkania/wynajem/?page={}'.format(page)
     rent_url = 'https://www.olx.pl/d/nieruchomosci/mieszkania/wynajem/?page={}'.format(page)
     room_url = 'https://www.olx.pl/d/nieruchomosci/stancje-pokoje/?page={}'.format(page)
@@ -59,8 +59,10 @@ def append_data(post, title, price, city):
 
 
 # 3. Find & append cities in common class span. Comparing with goverment list of polish cities.
-    post_area = post.find('p', class_ = 'css-p6wsjo-Text eu5v0x0').text.split(',')
-    city.append(post_area)
+    post_area = post.find('p', class_ = 'css-p6wsjo-Text eu5v0x0').text
+    element = post_area.split(',')[0]
+    city.append(element.split('-')[0].strip())
+    
     
 
 
@@ -73,5 +75,5 @@ for post in fr_post_container:
 
 print(len(title))
 print(len(price))
-print(city)
+print(len(city))
 
