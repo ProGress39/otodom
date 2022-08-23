@@ -13,16 +13,6 @@ sys.setrecursionlimit(20000)
 mysql_username = os.environ.get('MYSQL_USERNAME')
 mysql_password = os.environ.get('MYSQL_PASSWORD')
 
-# Connecting to list of polish cities to create list of available cities. Based on that we can later exctract city from common class which include other strings.
-with open('cities.csv', encoding="utf8") as cities_file:
-    reader = csv.reader(cities_file)
-    cities = list(reader)
-    cities_list = []
-    for city_listed in cities:
-        for city in city_listed:
-            if city != '':
-                cities_list.append(city)
-
 # Connect to olx webpage and append htmls to strings. Seperate variables for sales, rents and room rents
 flat_sale_htmls, flat_rent_htmls, room_rent_htmls = ('' for i in range(3))
 
@@ -50,7 +40,7 @@ fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('div', class
 rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('div', class_ = ['css-9nzgu8'])
 
 #Append data to empty list function
-def append_data(post, title, price):
+def append_data(post, title, price, city):
 
 # 1. Find & append titles
     post_title = post.find('h6', class_ = 'css-v3vynn-Text eu5v0x0').text
@@ -67,9 +57,21 @@ def append_data(post, title, price):
 
     price.append(round(int(float(post_price_ns)), 0))
 
+
+# 3. Find & append cities in common class span. Comparing with goverment list of polish cities.
+    post_area = post.find('p', class_ = 'css-p6wsjo-Text eu5v0x0').text.split(',')
+    city.append(post_area)
+    
+
+
 title = []
 price = []
+city = []
 
 for post in fr_post_container:
-    append_data(post, title, price)
+    append_data(post, title, price, city)
+
+print(len(title))
+print(len(price))
+print(city)
 
