@@ -62,18 +62,17 @@ def append_data(post, title, price, city):
     post_area = post.find('p', class_ = 'css-p6wsjo-Text eu5v0x0').text
     element = post_area.split(',')[0]
     city.append(element.split('-')[0].strip())
-    
-    
 
 
-title = []
-price = []
-city = []
-
-for post in fr_post_container:
-    append_data(post, title, price, city)
-
-print(len(title))
-print(len(price))
-print(len(city))
+# 4/5. Find & append square metrage and rooms in common class span.
+    post_sq_rooms = post.find_all('span', class_='css-s8wpzb eclomwz1')
+    if len(post_sq_rooms) == 4:
+        rooms.append(int(post_sq_rooms[2].text[0]))
+        sqmetrage.append(float(post_sq_rooms[3].text.split(' ')[0]))
+    elif len(post_sq_rooms) == 3:
+        rooms.append(int(post_sq_rooms[1].text[0]))
+        sqmetrage.append(float(post_sq_rooms[2].text.split(' ')[0]))
+    else:
+        rooms.append(0)
+        sqmetrage.append(0)
 
