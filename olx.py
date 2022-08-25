@@ -40,7 +40,7 @@ fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('div', class
 rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('div', class_ = ['css-9nzgu8'])
 
 #Append data to empty list function
-def append_data(post, title, price, city):
+def append_data(post, title, price, city, sq_metrage):
 
 # 1. Find & append titles
     post_title = post.find('h6', class_ = 'css-v3vynn-Text eu5v0x0').text
@@ -51,11 +51,11 @@ def append_data(post, title, price, city):
     post_price = post.find('p', class_ = 'css-wpfvmn-Text eu5v0x0').text
     post_price_ns = unicodedata.normalize('NFKD', post_price)
 
-    post_price_replace = {' ':'', 'zł': '', 'donegocjacji' : ''}
+    post_price_replace = {' ':'', 'zł': '', 'donegocjacji' : '', ",":"."}
     for key, value in post_price_replace.items():
         post_price_ns = post_price_ns.replace(key, value)
 
-    price.append(round(int(float(post_price_ns)), 0))
+    price.append(round(float(post_price_ns), 2))
 
 
 # 3. Find & append cities in common class span. Comparing with goverment list of polish cities.
@@ -65,14 +65,20 @@ def append_data(post, title, price, city):
 
 
 # 4/5. Find & append square metrage and rooms in common class span.
-    post_sq_rooms = post.find_all('span', class_='css-s8wpzb eclomwz1')
-    if len(post_sq_rooms) == 4:
-        rooms.append(int(post_sq_rooms[2].text[0]))
-        sqmetrage.append(float(post_sq_rooms[3].text.split(' ')[0]))
-    elif len(post_sq_rooms) == 3:
-        rooms.append(int(post_sq_rooms[1].text[0]))
-        sqmetrage.append(float(post_sq_rooms[2].text.split(' ')[0]))
-    else:
-        rooms.append(0)
-        sqmetrage.append(0)
+    post_sqm = post.find('p', class_='css-1bhbxl1-Text eu5v0x0').text[:-3].replace(",", ".")
+    sq_metrage.append(int(round(float(post_sqm),0)))
+
+title = []
+price = []
+city = []
+sq_metrage = []
+
+for post in fs_post_container:
+    append_data(post, title, price, city, sq_metrage)
+
+print(len(title))
+print(len(price))
+print(len(city))
+print(len(sq_metrage))
+    
 
