@@ -70,8 +70,8 @@ def append_data(post, title, price, city, sqmetrage, rooms):
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j13').text
     title.append(post_title)
 
-# 2. Find & append prices, number of rooms, square metrage (they're in same span class).
-    # Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.     
+# 2. Find & append prices, number of rooms (same class)
+# Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.     
     post_price = post.find('span', class_ = 'css-s8wpzb eclomwz1').text
     post_price_ns = unicodedata.normalize('NFKD', post_price)
 
@@ -105,7 +105,7 @@ def append_data(post, title, price, city, sqmetrage, rooms):
         rooms.append(0)
         sqmetrage.append(0)
 
-#Empty lists to store details data, 6 for every type of post (rent, sale, room rent)
+#Empty lists to store details data, 5 for every type of post (rent, sale, room rent)
 post_details = []
 
 for i in range(15):
