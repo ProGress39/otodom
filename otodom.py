@@ -161,7 +161,8 @@ m_fr_post_container = fr_post_container.select(['*', \
         lit((fr_post_container.post_price) / (fr_post_container.post_sqmetrage)).alias('price_per_sqm'), \
         \
         lit(current_date()).alias('download_date'), \
-        lit('Wynajem').alias('rodzaj') \
+        lit('wynajem').alias('rodzaj'), \
+        lit('otodom').alias('source') \
         ])
 
 m_fr_post_container.write \
@@ -189,7 +190,8 @@ m_fs_post_container = fs_post_container.select(['*', \
         lit((fs_post_container.post_price) / (fs_post_container.post_sqmetrage)).alias('price_per_sqm'), \
         \
         lit(current_date()).alias('download_date'), \
-        lit('Sprzedaz').alias('rodzaj') \
+        lit('Sprzedaz').alias('rodzaj'), \
+        lit('otodom').alias('source') \
         ])
 
 m_fs_post_container.write \
@@ -217,7 +219,8 @@ m_rr_post_container = rr_post_container.select(['*', \
         lit((rr_post_container.post_price) / (rr_post_container.post_sqmetrage)).alias('price_per_sqm'), \
         \
         lit(current_date()).alias('download_date'), \
-        lit('Pokoj').alias('rodzaj') \
+        lit('Pokoj').alias('rodzaj'), \
+        lit('otodom').alias('source') \
         ])
 
 m_rr_post_container.write \
