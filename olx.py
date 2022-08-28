@@ -68,6 +68,10 @@ def append_data(post, title, price, city, sq_metrage):
     post_sqm = post.find('p', class_='css-1bhbxl1-Text eu5v0x0').text[:-3].replace(",", ".")
     sq_metrage.append(int(round(float(post_sqm),0)))
 
+    
+
+
+
 title = []
 price = []
 city = []

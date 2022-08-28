@@ -64,7 +64,7 @@ fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('article', c
 rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('article', class_ = ['css-1rtqihe es62z2j18', 'css-e6zjf7 es62z2j18'])
 
 #Append data to empty list function
-def append_data(post, title, price, city, sqmetrage, rooms, type):
+def append_data(post, title, price, city, sqmetrage, rooms):
 
 # 1. Find & append titles
     post_title = post.find('h3', class_ = 'css-1rhznz4 es62z2j13').text
@@ -105,40 +105,33 @@ def append_data(post, title, price, city, sqmetrage, rooms, type):
         rooms.append(0)
         sqmetrage.append(0)
 
-# 6. Find & append type of post. Can be private or company.
-    post_sq_type = post.find('span', class_='css-16zp76g e1dxhs6v2')
-    if post_sq_type == 'Oferta prywatna':
-        type.append('Private post')
-    else:
-        type.append('Company post')
-
 #Empty lists to store details data, 6 for every type of post (rent, sale, room rent)
 post_details = []
 
-for i in range(18):
+for i in range(15):
     post_details.append([])
 
 # Loop to dive into post container and extract informations. Set n_jobs to -1 and it will use all CPU from device. [3:] to skip promoted offers
 if __name__ == '__main__':
-    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[0], post_details[1], post_details[2], post_details[3], post_details[4], post_details[5]) for post in fr_post_container[3:])
-    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[6], post_details[7], post_details[8], post_details[9], post_details[10], post_details[11]) for post in fs_post_container[3:])
-    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[12], post_details[13], post_details[14], post_details[15], post_details[16], post_details[17]) for post in rr_post_container[3:])
+    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[0], post_details[1], post_details[2], post_details[3], post_details[4]) for post in fr_post_container[3:])
+    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[5], post_details[6], post_details[7], post_details[8], post_details[9]) for post in fs_post_container[3:])
+    Parallel(n_jobs=1)(delayed(append_data)(post, post_details[10], post_details[11], post_details[12], post_details[13], post_details[14]) for post in rr_post_container[3:])
 
 # Create dictionaries from lists
 fr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
-               'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
-                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
-                in zip(post_details[0], post_details[1], post_details[2], post_details[3], post_details[4], post_details[5])]
+               'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms}
+                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms
+                in zip(post_details[0], post_details[1], post_details[2], post_details[3], post_details[4])]
 
 fs_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
-               'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
-                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
-                in zip(post_details[6], post_details[7], post_details[8], post_details[9], post_details[10], post_details[11])]
+               'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms}
+                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms
+                in zip(post_details[5], post_details[6], post_details[7], post_details[8], post_details[9])]
 
 rr_posts_dict = [{'post_title': post_titles, 'post_price': post_prices, 'post_city': post_cities,
-               'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms, 'post_type': post_type}
-                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms, post_type
-                in zip(post_details[12], post_details[13], post_details[14], post_details[15], post_details[16], post_details[17])]
+               'post_sqmetrage': post_sqmetrage, 'post_rooms': post_rooms}
+                for post_titles, post_prices, post_cities, post_sqmetrage, post_rooms
+                in zip(post_details[10], post_details[11], post_details[12], post_details[13], post_details[14])]
 
 
 # Start spark session, create dataframes from lists and add new conditional columns. Could use pandas here, but project is for CV, so want to show Spark basic knowledge.
@@ -161,7 +154,7 @@ m_fr_post_container = fr_post_container.select(['*', \
         lit((fr_post_container.post_price) / (fr_post_container.post_sqmetrage)).alias('price_per_sqm'), \
         \
         lit(current_date()).alias('download_date'), \
-        lit('wynajem').alias('rodzaj'), \
+        lit('rent').alias('type'), \
         lit('otodom').alias('source') \
         ])
 
@@ -190,7 +183,7 @@ m_fs_post_container = fs_post_container.select(['*', \
         lit((fs_post_container.post_price) / (fs_post_container.post_sqmetrage)).alias('price_per_sqm'), \
         \
         lit(current_date()).alias('download_date'), \
-        lit('Sprzedaz').alias('rodzaj'), \
+        lit('sell').alias('type'), \
         lit('otodom').alias('source') \
         ])
 
@@ -219,7 +212,7 @@ m_rr_post_container = rr_post_container.select(['*', \
         lit((rr_post_container.post_price) / (rr_post_container.post_sqmetrage)).alias('price_per_sqm'), \
         \
         lit(current_date()).alias('download_date'), \
-        lit('Pokoj').alias('rodzaj'), \
+        lit('room').alias('type'), \
         lit('otodom').alias('source') \
         ])
 
@@ -231,5 +224,3 @@ m_rr_post_container.write \
                     .option("password", mysql_password) \
                     .mode('Append') \
                     .save()
-
-#
