@@ -2,9 +2,11 @@ import pyspark
 from pyspark.sql import SparkSession, functions as pyspf
 from pyspark.sql.functions import lit, current_date
 import os
+from decouple import config
 
-mysql_username = os.environ.get('MYSQL_USERNAME')
-mysql_password = os.environ.get('MYSQL_PASSWORD')
+
+mysql_username = config('USER')
+mysql_password = config('KEY')
 
 spark = SparkSession.builder.master('local').getOrCreate()
 
