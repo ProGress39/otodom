@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-from pyparsing import null_debug_action
 import requests
 import unicodedata
 import csv
@@ -166,7 +165,6 @@ m_fr_post_container.write \
                     .option("password", mysql_password) \
                     .mode('Append') \
                     .save()
-
 
 fs_post_container = spark.createDataFrame(fs_posts_dict)
 m_fs_post_container = fs_post_container.select(['*', \
