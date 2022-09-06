@@ -12,13 +12,13 @@ import pickle
 from pyspark.sql.functions import when, lit, current_date
 import pyspark
 from pyspark.sql import SparkSession, DataFrameWriter
-
+from decouple import config
 
 sys.setrecursionlimit(20000)
 
 #Setting environmental variables for db credentials
-mysql_username = os.environ.get('MYSQL_USERNAME')
-mysql_password = os.environ.get('MYSQL_PASSWORD')
+mysql_username = config('USER')
+mysql_password = config('KEY')
 
 # Solving problem with PySpark environmental variables
 os.environ['PYSPARK_PYTHON'] = sys.executable
@@ -46,9 +46,9 @@ for page in range(2, 3):
 
 
 # Post containers and empty lists to which we're appending info scrapped. Later we will use the lists to create pandas table.
-fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('div', class_ = ['css-9nzgu8'])
-fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('div', class_ = ['css-9nzgu8'])
-rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('div', class_ = ['css-9nzgu8'])
+fs_post_container = BeautifulSoup(flat_sale_htmls, 'lxml').find_all('div', class_ = ['css-1apmciz'])
+fr_post_container = BeautifulSoup(flat_rent_htmls, 'lxml').find_all('div', class_ = ['css-1apmciz'])
+rr_post_container = BeautifulSoup(room_rent_htmls, 'lxml').find_all('div', class_ = ['css-1apmciz'])
 
 #Append data to empty list function
 def append_data(post, title, price, city, sq_metrage):
@@ -137,7 +137,8 @@ m_fr_post_container = fr_post_container.select(['*', \
 
 m_fr_post_container.write \
                     .format("jdbc") \
-                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("url","jdbc:mysql://localhost/apartments_web_scrapper") \
+                    .option("driver", "com.mysql.jdbc.Driver") \
                     .option("dbtable","mieszkania") \
                     .option("user", mysql_username) \
                     .option("password", mysql_password) \
@@ -166,7 +167,8 @@ m_fs_post_container = fs_post_container.select(['*', \
 
 m_fs_post_container.write \
                     .format("jdbc") \
-                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("url","jdbc:mysql://localhost/apartments_web_scrapper") \
+                    .option("driver", "com.mysql.jdbc.Driver") \
                     .option("dbtable","mieszkania") \
                     .option("user", mysql_username) \
                     .option("password", mysql_password) \
@@ -191,7 +193,8 @@ m_rr_post_container = rr_post_container.select(['*', \
 
 m_rr_post_container.write \
                     .format("jdbc") \
-                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("url","jdbc:mysql://localhost/apartments_web_scrapper") \
+                    .option("driver", "com.mysql.jdbc.Driver") \
                     .option("dbtable","mieszkania") \
                     .option("user", mysql_username) \
                     .option("password", mysql_password) \
