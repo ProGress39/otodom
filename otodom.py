@@ -13,6 +13,7 @@ import pickle
 from pyspark.sql.functions import when, lit, current_date
 import pandas as pd
 
+
 sys.setrecursionlimit(20000)
 
 # Solving problem with PySpark environmental variables
@@ -159,10 +160,11 @@ m_fr_post_container = fr_post_container.select(['*', \
 
 m_fr_post_container.write \
                     .format("jdbc") \
-                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("url","jdbc:mysql://localhost/apartments_web_scrapper") \
+                    .option("driver", "com.mysql.jdbc.Driver") \
                     .option("dbtable","mieszkania") \
-                    .option("user", mysql_username) \
-                    .option("password", mysql_password) \
+                    .option("user", "sylwester") \
+                    .option("password", "AlienAlien1212!") \
                     .mode('Append') \
                     .save()
 
@@ -187,10 +189,11 @@ m_fs_post_container = fs_post_container.select(['*', \
 
 m_fs_post_container.write \
                     .format("jdbc") \
-                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("url","jdbc:mysql://localhost/apartments_web_scrapper") \
+                    .option("driver", "com.mysql.jdbc.Driver") \
                     .option("dbtable","mieszkania") \
-                    .option("user", mysql_username) \
-                    .option("password", mysql_password) \
+                    .option("user", "sylwester") \
+                    .option("password", "AlienAlien1212!") \
                     .mode('Append') \
                     .save()
 
@@ -216,9 +219,10 @@ m_rr_post_container = rr_post_container.select(['*', \
 
 m_rr_post_container.write \
                     .format("jdbc") \
-                    .option("url","jdbc:mysql://localhost/properties") \
+                    .option("url","jdbc:mysql://localhost/apartments_web_scrapper") \
+                    .option("driver", "com.mysql.jdbc.Driver") \
                     .option("dbtable","mieszkania") \
-                    .option("user", mysql_username) \
-                    .option("password", mysql_password) \
+                    .option("user", "sylwester") \
+                    .option("password", "AlienAlien1212!") \
                     .mode('Append') \
                     .save()
