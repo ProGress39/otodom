@@ -72,7 +72,7 @@ def append_data(post, title, price, city, sqmetrage, rooms):
 
 # 2. Find & append prices, number of rooms (same class)
 # Loop for replacements in price. Inserting None instead of "ask for price" if there's no price mentioned.     
-    post_price = post.find('span', class_ = 'css-s8wpzb eclomwz1').text
+    post_price = post.find('span', class_ = 'css-s8wpzb eclomwz2').text
     post_price_ns = unicodedata.normalize('NFKD', post_price)
 
     post_price_replace = {' ':'', 'zł': '','€':'','$':'', ',':'.', '/mc':''}
