@@ -94,7 +94,7 @@ def append_data(post, title, price, city, sqmetrage, rooms):
             continue
 
 # 4/5. Find & append square metrage and rooms in common class span.
-    post_sq_rooms = post.find_all('span', class_='css-s8wpzb eclomwz1')
+    post_sq_rooms = post.find_all('span', class_='css-s8wpzb eclomwz2')
     if len(post_sq_rooms) == 4:
         rooms.append(int(post_sq_rooms[2].text[0]))
         sqmetrage.append(float(post_sq_rooms[3].text.split(' ')[0]))

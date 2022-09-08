@@ -12,7 +12,7 @@ spark = SparkSession.builder.master('local').getOrCreate()
 
 # Read MySQL table with raw apartaments data into spark df
 all_data_df = spark.read.format('jdbc') \
-                    .option('url', 'jdbc:mysql://localhost/properties') \
+                    .option("url","jdbc:mysql://localhost/apartments_web_scrapper") \
                     .option('driver', 'com.mysql.jdbc.Driver') \
                     .option("user", mysql_username) \
                     .option("password", mysql_password) \
@@ -30,8 +30,9 @@ city_grouped = all_data_df.filter(all_data_df.download_date == current_date()).g
 
 city_grouped.write \
                     .format("jdbc") \
-                    .option("url","jdbc:mysql://localhost/properties") \
-                    .option("dbtable","podsumowanie") \
+                    .option("url","jdbc:mysql://localhost/apartments_web_scrapper") \
+                    .option("driver", "com.mysql.jdbc.Driver") \
+                    .option("dbtable","city_summary") \
                     .option("user", mysql_username) \
                     .option("password", mysql_password) \
                     .mode('Append') \
@@ -47,8 +48,9 @@ main_cities_grouped = city_grouped.filter(city_grouped.post_city.isin(main_citie
 
 main_cities_grouped.write \
                     .format("jdbc") \
-                    .option("url","jdbc:mysql://localhost/properties") \
-                    .option("dbtable","podsumowanie_main_cities") \
+                    .option("url","jdbc:mysql://localhost/apartments_web_scrapper") \
+                    .option("driver", "com.mysql.jdbc.Driver") \
+                    .option("dbtable","main_cities_summary") \
                     .option("user", mysql_username) \
                     .option("password", mysql_password) \
                     .mode('Append') \
