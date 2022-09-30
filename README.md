@@ -1,7 +1,7 @@
 Program allows orchestrated data web scrap from otodom and olx websites and store in MySQL database.
 
 The purpose for this program is to capture current image of posts on both sites every week for further analyse. So we don't want to have current updated database
-of available posts, but current situation captured every week. By doing so we can then analyse how market changed with time.
+of available posts, but current situation captured every week. By doing so we can then analyse how market changed over time.
 
 Technologies used:
 1) Python
